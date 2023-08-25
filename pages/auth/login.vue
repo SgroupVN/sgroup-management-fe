@@ -2,7 +2,7 @@
 import { useAuthStore, LoginRequestDto } from '~/store/auth';
 
 definePageMeta({
-    layout: 'default-layout',
+    layout: 'default',
 });
 useHead({
     title: 'Login',

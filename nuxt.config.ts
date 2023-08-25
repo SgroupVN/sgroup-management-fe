@@ -60,7 +60,9 @@ export default defineNuxtConfig({
         },
     },
     css: [
-        'primevue/resources/themes/lara-light-blue/theme.css'
+        'primevue/resources/themes/saga-blue/theme.css', //theme
+        'primevue/resources/primevue.min.css', //core css
+        'primeicons/primeicons.css', //icons
     ],
     build: {
         transpile: ['primevue'],
