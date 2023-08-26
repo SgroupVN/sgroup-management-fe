@@ -8,6 +8,19 @@ export default defineNuxtConfig({
     imports: {
         autoImport: true,
     },
+    app: {
+        head: {
+            title: 'Sgroup Management',
+            link: [
+                {
+                    id: 'theme-css',
+                    rel: 'stylesheet',
+                    type: 'text/css',
+                    href: '/themes/lara-light-indigo/theme.css'
+                }
+            ]
+        }
+    },
     modules: [
         'nuxt-icon',
         '@vueuse/nuxt',
@@ -22,6 +35,7 @@ export default defineNuxtConfig({
                 ],
             },
         ],
+        '@nuxtjs/tailwindcss',
         // [
         //     '@nuxtjs/sentry',
         //     {
@@ -31,15 +45,6 @@ export default defineNuxtConfig({
         //     },
         // ],
     ],
-    routeRules: {
-        // Homepage pre-rendered at build time
-        '/': { prerender: true },
-        // Add cors headers on API routes
-        '/api/**': { cors: true },
-    },
-    typescript: {
-        strict: false,
-    },
     runtimeConfig: {
         public: {
             apiBaseUrl: process.env.NUXT_PUBLIC_API_BASE_URL,
@@ -63,8 +68,11 @@ export default defineNuxtConfig({
         'primevue/resources/themes/saga-blue/theme.css', //theme
         'primevue/resources/primevue.min.css', //core css
         'primeicons/primeicons.css', //icons
+        'primeicons/primeicons.css', 
+        'primeflex/primeflex.scss', 
+        'assets/styles.scss',
     ],
     build: {
-        transpile: ['primevue'],
+        transpile: ['primevue']
     },
 });
