@@ -1,55 +1,81 @@
 <script setup>
-import { useLayout } from '@/layouts/composables/layout';
-import { ref, computed } from 'vue';
-import AppConfig from '@/layouts/AppConfig.vue';
-const { layoutConfig } = useLayout();
-const email = ref('');
+import { ref } from 'vue';
+const rememberMe = ref(false);
+const username = ref('');
 const password = ref('');
-const checked = ref(false);
-const logoUrl = computed(() => {
-    return `/layout/images/${layoutConfig.darkTheme.value ? 'logo-white' : 'logo-dark'}.svg`;
-});
+
+const isEmailValid = ref(false);
+const isPasswordValid = ref(false);
+
+
 
 definePageMeta({
-    layout: false
+    layout: 'auth'
 });
-</script>
 
+const login = () => {
+    isEmailValid.value = username.value.includes('@');
+    isPasswordValid.value = password.value.trim().length > 6;
+
+    if (!isEmailValid.value || !isPasswordValid.value) {
+        return;
+    }
+    // navigate to dashboard
+    navigateTo('/')
+};
+</script>
 <template>
-    <div class="flex flex-column align-items-center justify-content-center">
-        <img :src="logoUrl" alt="Sakai logo" class="mb-5 w-6rem flex-shrink-0" />
-        <div
-            style="border-radius: 56px; padding: 0.3rem; background: linear-gradient(180deg, var(--primary-color) 10%, rgba(33, 150, 243, 0) 30%)">
-            <div class="w-full surface-card py-8 px-5 sm:px-8" style="border-radius: 53px">
-                <div class="text-center mb-5">
-                    <img src="/demo/images/login/avatar.png" alt="Image" height="50" class="mb-3" />
-                    <div class="text-900 text-3xl font-medium mb-3">Welcome, Isabel!</div>
-                    <span class="text-600 font-medium">Sign in to continue</span>
+    <div>
+        <h2 class="mt-2 text-center text-2xl font-bold leading-9 tracking-tight text-gray-900">Sign in to your
+            account
+        </h2>
+    </div>
+
+    <div class="mt-2 sm:mx-auto sm:w-full sm:max-w-[480px]">
+        <div class="bg-white px-6 py-12 shadow sm:rounded-lg sm:px-12">
+            <form class="space-y-6 " method="POST" @submit.prevent="login">
+                <span class="p-input-icon-left w-full">
+                    <i class="pi pi-user" />
+                    <InputText v-model="email" type="text" placeholder="Username" class="w-full"
+                        :class="{ 'p-invalid': isEmailValid }" />
+                </span>
+                <div>
+                    <span class="p-input-icon-left w-full">
+                        <i class="pi pi-eye" />
+                        <InputText v-model="password" type="text" placeholder="Password" class="w-full" :class="{
+                            'p-invalid': isPasswordValid
+                        }" />
+                    </span>
+                </div>
+
+                <div class="flex items-center justify-between">
+                    <div class="flex align-items-center">
+                        <Checkbox v-model="rememberMe" inputId="ingredient1" name="rememberMe" value="Cheese" />
+                        <label for="ingredient1" class="ml-2"> Remember
+                            me </label>
+                    </div>
+
+                    <div class="text-sm leading-6">
+                        <a href="#" class="font-semibold text-indigo-600 hover:text-indigo-500">Forgot password?</a>
+                    </div>
                 </div>
 
                 <div>
-                    <label for="email1" class="block text-900 text-xl font-medium mb-2">Email</label>
-                    <InputText id="email1" v-model="email" type="text" placeholder="Email address"
-                        class="w-full md:w-30rem mb-5" style="padding: 1rem" />
-
-                    <label for="password1" class="block text-900 font-medium text-xl mb-2">Password</label>
-                    <Password id="password1" v-model="password" placeholder="Password" :toggleMask="true"
-                        class="w-full mb-3" inputClass="w-full" :inputStyle="{ padding: '1rem' }"></Password>
-
-                    <div class="flex align-items-center justify-content-between mb-5 gap-5">
-                        <div class="flex align-items-center">
-                            <Checkbox id="rememberme1" v-model="checked" binary class="mr-2"></Checkbox>
-                            <label for="rememberme1">Remember me</label>
-                        </div>
-                        <a class="font-medium no-underline ml-2 text-right cursor-pointer"
-                            style="color: var(--primary-color)">Forgot password?</a>
-                    </div>
-                    <Button label="Sign In" class="w-full p-3 text-xl"></Button>
+                    <Button type="submit" label="Sign in" class="w-full" />
                 </div>
-            </div>
+            </form>
+
         </div>
+
+        <p class="mt-10 text-center text-sm text-gray-500">
+            Not a member?
+            {{ ' ' }}
+            <a href="#" class="font-semibold leading-6 text-indigo-600 hover:text-indigo-500">Start a 14 day free
+                trial</a>
+        </p>
     </div>
 </template>
+
 
 <style scoped>
 .pi-eye {
@@ -60,4 +86,5 @@ definePageMeta({
 .pi-eye-slash {
     transform: scale(1.6);
     margin-right: 1rem;
-}</style>
+}
+</style>
