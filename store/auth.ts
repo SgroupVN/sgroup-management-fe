@@ -46,13 +46,13 @@ export const useAuthStore = defineStore({
     id: 'auth',
     state: () =>
         ({
-            user: nuxtStorage.localStorage.getData('user') as AuthUser | null,
-            accessToken: nuxtStorage.localStorage.getData(
-                'accessToken'
-            ) as string,
+            user: {},
+            accessToken: '',
         }) as AuthData,
     getters: {
         isAuth(): Boolean {
+            const refreshToken = useCookie('refresh_token').value;
+            if (!refreshToken) return false;
             return this.accessToken !== '';
         },
 
@@ -79,10 +79,12 @@ export const useAuthStore = defineStore({
                     avatarUrl: 'avatarUrl',
                 },
             };
-            nuxtStorage.localStorage.setData('accessToken', data.accessToken);
-            nuxtStorage.localStorage.setData('refreshToken', data.refreshToken);
-            nuxtStorage.localStorage.setData('user', data.user);
+            useCookie('refresh_token', {
+                sameSite: 'strict',
+            }).value = data.refreshToken;
+
             this.accessToken = data.accessToken;
+            // this.user = jwtDecode<AuthUser>(data.accessToken);
             this.user = data.user;
             return true;
         },
@@ -158,8 +160,12 @@ export const useAuthStore = defineStore({
         logout() {
             this.user = null;
             this.accessToken = '';
-            nuxtStorage.localStorage.removeItem('user');
-            nuxtStorage.localStorage.removeItem('accessToken');
+
+            useCookie('refresh_token', {
+                sameSite: 'strict',
+            }).value = null;
+
+            navigateTo('/auth/login');
         },
     },
 });

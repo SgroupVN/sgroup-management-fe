@@ -4,7 +4,6 @@ const { logout } = useAuthStore();
 
 const onSignOut = async () => {
     await logout();
-    navigateTo('/auth/login');
 };
 </script>
 

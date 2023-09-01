@@ -1,49 +1,3 @@
-<script setup>
-import { useAuthStore } from '@/store/auth';
-import { ref } from 'vue';
-
-const { login } = useAuthStore();
-
-const rememberMe = ref(false);
-const email = ref('');
-const password = ref('');
-
-const isEmailValid = ref(false);
-const isPasswordValid = ref(false);
-
-definePageMeta({
-    layout: 'auth',
-});
-
-const onLogin = async () => {
-    const isDataValid = checkIsDataValid();
-    if (!isDataValid) {
-        return;
-    }   
-    console.log('login')
-
-    const isSuccess = await login({
-        email: email.value,
-        password: password.value,
-        rememberMe: rememberMe.value,
-    });
-
-    if (isSuccess) {
-        navigateTo('/');
-    }
-};
-
-const onDataChange = () => {
-    checkIsDataValid();
-};
-
-const checkIsDataValid = () => {
-    isEmailValid.value = email.value.includes('@');
-    isPasswordValid.value = password.value.trim().length > 6;
-    // return isEmailValid.value && isPasswordValid.value;
-    return true
-};
-</script>
 <template>
     <div class="mt-2 sm:mx-auto sm:w-full sm:max-w-[580px] px-6 sm:px-12">
         <h2
@@ -139,6 +93,50 @@ const checkIsDataValid = () => {
         </div>
     </div>
 </template>
+
+<script setup>
+import { useAuthStore } from '@/store/auth';
+import { ref } from 'vue';
+
+const { login } = useAuthStore();
+
+const rememberMe = ref(false);
+const email = ref('');
+const password = ref('');
+
+const isEmailValid = ref(false);
+const isPasswordValid = ref(false);
+
+definePageMeta({
+    layout: 'auth',
+});
+
+const onLogin = async () => {
+    const isDataValid = checkIsDataValid();
+    if (!isDataValid) {
+        return;
+    }
+    const isSuccess = await login({
+        email: email.value,
+        password: password.value,
+        rememberMe: rememberMe.value,
+    });
+
+    if (isSuccess) {
+        navigateTo('/');
+    }
+};
+
+const onDataChange = () => {
+    checkIsDataValid();
+};
+
+const checkIsDataValid = () => {
+    isEmailValid.value = email.value.includes('@');
+    isPasswordValid.value = password.value.trim().length > 6;
+    return isEmailValid.value && isPasswordValid.value;
+};
+</script>
 
 <style scoped>
 .pi-eye {
