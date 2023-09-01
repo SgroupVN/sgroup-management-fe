@@ -1,6 +1,5 @@
 import jwtDecode from 'jwt-decode';
 import { defineStore } from 'pinia';
-import nuxtStorage from 'nuxt-storage';
 //
 import { Role } from '~/types/enums/Role';
 
@@ -91,8 +90,7 @@ export const useAuthStore = defineStore({
 
         async refreshToken() {
             try {
-                const refreshToken =
-                    nuxtStorage.localStorage.getData('refreshToken');
+                const refreshToken = useCookie('refresh_token').value;
 
                 if (!refreshToken) return;
 
@@ -137,8 +135,6 @@ export const useAuthStore = defineStore({
                 body: formData,
             });
 
-            nuxtStorage.localStorage.setData('accessToken', data.accessToken);
-            nuxtStorage.localStorage.setData('refreshToken', data.refreshToken);
             this.accessToken = data.accessToken;
             const payload = jwtDecode<AuthUser>(data.accessToken);
             this.user = payload;
