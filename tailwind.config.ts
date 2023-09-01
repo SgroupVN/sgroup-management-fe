@@ -11,4 +11,11 @@ module.exports = {
         preflight: false,
     },
     plugins: [],
+    theme: {
+        extends: {
+            borderRadius: {
+                '40': '40px',
+            },
+        },
+    },
 };

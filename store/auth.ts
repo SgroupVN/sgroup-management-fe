@@ -19,8 +19,6 @@ export type AuthPayload = {
     role: Role;
     username: string;
     avatarUrl: string;
-    iat: number;
-    exp: number;
 };
 
 export type AuthUser = Omit<AuthPayload, 'iat' | 'exp'>;
@@ -38,7 +36,7 @@ export type RegisterResponse = {
 };
 
 type AuthData = {
-    access_token: string;
+    accessToken: string;
     user: AuthUser;
     loading: boolean;
 };
@@ -56,7 +54,7 @@ export const useAuthStore = defineStore({
     id: 'auth',
     state: () =>
         ({
-            access_token: '',
+            accessToken: '',
             user: {},
         }) as AuthData,
     getters: {
@@ -69,32 +67,50 @@ export const useAuthStore = defineStore({
                     jwtDecode<AuthPayload>(refreshToken);
 
                 if (!refreshTokenPayload) return false;
-                if (refreshTokenPayload.exp * 1000 < Date.now()) return false;
             } catch (error) {
                 return false;
             }
-
-            return this.access_token !== '';
+            console.log('isAuth');
+            console.log(this.user);
+            return this.accessToken !== '';
         },
         bearerToken(): string {
-            if (!this.access_token) return '';
-            return `Bearer ${this.access_token}`;
+            if (!this.accessToken) return '';
+            return `Bearer ${this.accessToken}`;
         },
     },
     actions: {
         async login(formData: LoginRequestDto) {
-            const data = await useApiPost<LoginResponse>('/auth/login', {
-                body: formData,
-            });
+            // const data = await useApiPost<LoginResponse>('/auth/login', {
+            //     body: formData,
+            // });
+            // useCookie('refresh_token', {
+            //     sameSite: 'strict',
+            // }).value = data.refreshToken;
 
-            useCookie('refresh_token', {
+            // this.accessToken = data.accessToken;
+            // const payload = jwtDecode<AuthPayload>(data.accessToken);
+            // this.user = payload;
+            // location.reload();
+
+            const data = {
+                refreshToken: 'refreshToken',
+                accessToken: 'accessToken',
+            };
+            useCookie('accessToken', {
                 sameSite: 'strict',
             }).value = data.refreshToken;
 
-            this.access_token = data.accessToken;
-            const payload = jwtDecode<AuthPayload>(data.accessToken);
+            const payload = {
+                id: 1,
+                email: 'p@gmail.com',
+                name: 'name',
+                role: Role.Admin,
+                username: 'username',
+                avatarUrl: 'avatarUrl',
+            };
+            this.accessToken = data.accessToken;
             this.user = payload;
-            location.reload();
         },
 
         async refreshToken() {
@@ -111,11 +127,6 @@ export const useAuthStore = defineStore({
                     return;
                 }
 
-                if (refreshTokenPayload.exp * 1000 < Date.now()) {
-                    this.logout();
-                    return;
-                }
-
                 const data = await useApiPost<{
                     accessToken: string;
                 }>('/auth/refresh', {
@@ -125,10 +136,10 @@ export const useAuthStore = defineStore({
                     },
                 });
 
-                this.access_token = data.accessToken;
+                this.accessToken = data.accessToken;
                 const payload = jwtDecode<AuthPayload>(data.accessToken);
 
-                this.access_token = data.accessToken;
+                this.accessToken = data.accessToken;
                 this.user = payload;
             } catch (error) {
                 this.logout();
@@ -150,14 +161,14 @@ export const useAuthStore = defineStore({
                 body: formData,
             });
 
-            useCookie('access_token', {
+            useCookie('accessToken', {
                 sameSite: 'strict',
             }).value = data.accessToken;
             useCookie('refresh_token', {
                 sameSite: 'strict',
             }).value = data.refreshToken;
 
-            this.access_token = data.accessToken;
+            this.accessToken = data.accessToken;
             const payload = jwtDecode<AuthPayload>(data.accessToken);
             this.user = payload;
             location.reload();
