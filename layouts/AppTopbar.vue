@@ -1,6 +1,17 @@
+<script setup>
+import { useAuthStore } from '@/store/auth';
+const { logout } = useAuthStore();
+
+const onSignOut = async () => {
+    await logout();
+    navigateTo('/auth/login');
+};
+</script>
 
 <template>
-    <div class="layout-topbar sticky h-20 left-0 top-0 w-full px-4 py-2 flex items-center shadow-md bg-white">
+    <div
+        class="layout-topbar sticky h-20 left-0 top-0 w-full px-4 py-2 flex items-center shadow-md bg-white"
+    >
         <router-link to="/" class="flex items-center">
             <img src="logo-sgroup.png" class="h-16 w-16" />
             <span>S-GROUP</span>
@@ -18,6 +29,10 @@
             <button class="p-link layout-topbar-button">
                 <i class="pi pi-cog"></i>
                 <span>Settings</span>
+            </button>
+            <button @click="onSignOut" class="p-link layout-topbar-button">
+                <i class="pi pi-sign-out"></i>
+                <span>Sign out</span>
             </button>
         </div>
     </div>

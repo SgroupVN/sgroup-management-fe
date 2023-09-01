@@ -1,10 +1,13 @@
 import jwtDecode from 'jwt-decode';
 import { defineStore } from 'pinia';
+import nuxtStorage from 'nuxt-storage';
+//
 import { Role } from '~/types/enums/Role';
 
 export type LoginRequestDto = {
     username: string;
     password: string;
+    rememberMe: boolean;
 };
 
 export type LoginResponse = {
@@ -12,7 +15,7 @@ export type LoginResponse = {
     refreshToken: string;
 };
 
-export type AuthPayload = {
+export type AuthUser = {
     id: number;
     email: string;
     name: string;
@@ -20,8 +23,6 @@ export type AuthPayload = {
     username: string;
     avatarUrl: string;
 };
-
-export type AuthUser = Omit<AuthPayload, 'iat' | 'exp'>;
 
 export type RegisterRequestDto = {
     email: string;
@@ -37,90 +38,63 @@ export type RegisterResponse = {
 
 type AuthData = {
     accessToken: string;
-    user: AuthUser;
+    user: AuthUser | null;
     loading: boolean;
-};
-
-export type RequestResetPasswordDto = {
-    email: string;
-};
-
-export type ResetPasswordDto = {
-    token: string;
-    password: string;
 };
 
 export const useAuthStore = defineStore({
     id: 'auth',
     state: () =>
         ({
-            accessToken: '',
-            user: {},
+            user: nuxtStorage.localStorage.getData('user') as AuthUser | null,
+            accessToken: nuxtStorage.localStorage.getData(
+                'accessToken'
+            ) as string,
         }) as AuthData,
     getters: {
         isAuth(): Boolean {
-            const refreshToken = useCookie('refresh_token').value;
-            if (!refreshToken) return false;
-
-            try {
-                const refreshTokenPayload =
-                    jwtDecode<AuthPayload>(refreshToken);
-
-                if (!refreshTokenPayload) return false;
-            } catch (error) {
-                return false;
-            }
-            console.log('isAuth');
-            console.log(this.user);
             return this.accessToken !== '';
         },
+
         bearerToken(): string {
             if (!this.accessToken) return '';
             return `Bearer ${this.accessToken}`;
         },
     },
+
     actions: {
         async login(formData: LoginRequestDto) {
             // const data = await useApiPost<LoginResponse>('/auth/login', {
             //     body: formData,
             // });
-            // useCookie('refresh_token', {
-            //     sameSite: 'strict',
-            // }).value = data.refreshToken;
-
-            // this.accessToken = data.accessToken;
-            // const payload = jwtDecode<AuthPayload>(data.accessToken);
-            // this.user = payload;
-            // location.reload();
-
             const data = {
                 refreshToken: 'refreshToken',
                 accessToken: 'accessToken',
+                user: {
+                    id: 1,
+                    email: 'p@gmail.com',
+                    name: 'name',
+                    role: Role.Admin,
+                    username: 'username',
+                    avatarUrl: 'avatarUrl',
+                },
             };
-            useCookie('accessToken', {
-                sameSite: 'strict',
-            }).value = data.refreshToken;
-
-            const payload = {
-                id: 1,
-                email: 'p@gmail.com',
-                name: 'name',
-                role: Role.Admin,
-                username: 'username',
-                avatarUrl: 'avatarUrl',
-            };
+            nuxtStorage.localStorage.setData('accessToken', data.accessToken);
+            nuxtStorage.localStorage.setData('refreshToken', data.refreshToken);
+            nuxtStorage.localStorage.setData('user', data.user);
             this.accessToken = data.accessToken;
-            this.user = payload;
+            this.user = data.user;
+            return true;
         },
 
         async refreshToken() {
             try {
-                const refreshToken = useCookie('refresh_token').value;
+                const refreshToken =
+                    nuxtStorage.localStorage.getData('refreshToken');
 
                 if (!refreshToken) return;
 
-                const refreshTokenPayload =
-                    jwtDecode<AuthPayload>(refreshToken);
+                const refreshTokenPayload = jwtDecode<AuthUser>(refreshToken);
 
                 if (!refreshTokenPayload) {
                     this.logout();
@@ -137,7 +111,7 @@ export const useAuthStore = defineStore({
                 });
 
                 this.accessToken = data.accessToken;
-                const payload = jwtDecode<AuthPayload>(data.accessToken);
+                const payload = jwtDecode<AuthUser>(data.accessToken);
 
                 this.accessToken = data.accessToken;
                 this.user = payload;
@@ -161,38 +135,31 @@ export const useAuthStore = defineStore({
                 body: formData,
             });
 
-            useCookie('accessToken', {
-                sameSite: 'strict',
-            }).value = data.accessToken;
-            useCookie('refresh_token', {
-                sameSite: 'strict',
-            }).value = data.refreshToken;
-
+            nuxtStorage.localStorage.setData('accessToken', data.accessToken);
+            nuxtStorage.localStorage.setData('refreshToken', data.refreshToken);
             this.accessToken = data.accessToken;
-            const payload = jwtDecode<AuthPayload>(data.accessToken);
+            const payload = jwtDecode<AuthUser>(data.accessToken);
             this.user = payload;
             location.reload();
         },
 
-        async sendRequestResetPassword(dto: RequestResetPasswordDto) {
+        async sendRequestResetPassword(dto: { email: string }) {
             await useApiPost('/auth/request-reset-password', {
                 body: dto,
             });
         },
 
-        async resetPassword(dto: ResetPasswordDto) {
+        async resetPassword(dto: { token: string; password: string }) {
             await useApiPost('/auth/reset-password', {
                 body: dto,
             });
         },
 
         logout() {
-            useCookie('refresh_token', {
-                sameSite: 'strict',
-            }).value = null;
-            if (process.client) {
-                location.replace('/auth/login');
-            }
+            this.user = null;
+            this.accessToken = '';
+            nuxtStorage.localStorage.removeItem('user');
+            nuxtStorage.localStorage.removeItem('accessToken');
         },
     },
 });

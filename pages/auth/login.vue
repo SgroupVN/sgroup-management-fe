@@ -1,6 +1,5 @@
 <script setup>
 import { useAuthStore } from '@/store/auth';
-import { storeToRefs } from 'pinia';
 import { ref } from 'vue';
 
 const { login } = useAuthStore();
@@ -17,24 +16,32 @@ definePageMeta({
 });
 
 const onLogin = async () => {
-    isEmailValid.value = email.value.includes('@');
-    isPasswordValid.value = password.value.trim().length > 6;
-
-    if (!isEmailValid.value || !isPasswordValid.value) {
+    const isDataValid = checkIsDataValid();
+    if (!isDataValid) {
         return;
-    }
+    }   
+    console.log('login')
 
-    await login({
+    const isSuccess = await login({
         email: email.value,
         password: password.value,
         rememberMe: rememberMe.value,
     });
-    const auth = useAuthStore();
-    const isAuth = computed(() => auth.isAuth);
 
-    if (isAuth.value) {
-        router.push({ name: '/' });
+    if (isSuccess) {
+        navigateTo('/');
     }
+};
+
+const onDataChange = () => {
+    checkIsDataValid();
+};
+
+const checkIsDataValid = () => {
+    isEmailValid.value = email.value.includes('@');
+    isPasswordValid.value = password.value.trim().length > 6;
+    // return isEmailValid.value && isPasswordValid.value;
+    return true
 };
 </script>
 <template>
@@ -58,7 +65,14 @@ const onLogin = async () => {
                             placeholder="Username"
                             class="w-full"
                             :class="{ 'p-invalid': !isEmailValid }"
+                            :onChange="onDataChange"
                         />
+                        <small
+                            v-if="!isEmailValid && !!email"
+                            class="p-error"
+                            id="mask-error"
+                            >{{ 'This email is invalid' || '&nbsp;' }}</small
+                        >
                     </span>
                     <div>
                         <span class="p-input-icon-left w-full">
@@ -71,8 +85,18 @@ const onLogin = async () => {
                                 :class="{
                                     'p-invalid': !isPasswordValid,
                                 }"
+                                :onChange="onDataChange"
                             />
                         </span>
+                        <small
+                            v-if="!isPasswordValid && !!password"
+                            class="p-error"
+                            id="mask-error"
+                            >{{
+                                'Password must be at least 6 characters' ||
+                                '&nbsp;'
+                            }}</small
+                        >
                     </div>
 
                     <div class="flex items-center justify-between">
