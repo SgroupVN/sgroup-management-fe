@@ -2,9 +2,8 @@
     <div class="flex w-screen h-screen flex-1 p-4 bg-gradient-to-t from-cyan-200 to-white">
         <div class="absolute top-0 left-0 m-3 flex items-center gap-2">
             <router-link to="/">
-                <img src="../public/logo-sgroup.png" class="h-12" />
+                <img src="../public/logo/logo-sgroup-black.png" class="h-12" />
             </router-link>
-            <b>S-GROUP</b>
         </div>
 
         <div
