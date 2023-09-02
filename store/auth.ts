@@ -1,10 +1,12 @@
 import jwtDecode from 'jwt-decode';
 import { defineStore } from 'pinia';
+//
 import { Role } from '~/types/enums/Role';
 
 export type LoginRequestDto = {
     username: string;
     password: string;
+    rememberMe: boolean;
 };
 
 export type LoginResponse = {
@@ -12,18 +14,14 @@ export type LoginResponse = {
     refreshToken: string;
 };
 
-export type AuthPayload = {
+export type AuthUser = {
     id: number;
     email: string;
     name: string;
     role: Role;
     username: string;
     avatarUrl: string;
-    iat: number;
-    exp: number;
 };
-
-export type AuthUser = Omit<AuthPayload, 'iat' | 'exp'>;
 
 export type RegisterRequestDto = {
     email: string;
@@ -38,63 +36,56 @@ export type RegisterResponse = {
 };
 
 type AuthData = {
-    access_token: string;
-    user: AuthUser;
+    accessToken: string;
+    user: AuthUser | null;
     loading: boolean;
-};
-
-export type RequestResetPasswordDto = {
-    email: string;
-};
-
-export type ResetPasswordDto = {
-    token: string;
-    password: string;
 };
 
 export const useAuthStore = defineStore({
     id: 'auth',
     state: () =>
         ({
-            access_token: '',
             user: {},
+            accessToken: '',
         }) as AuthData,
     getters: {
         isAuth(): Boolean {
             const refreshToken = useCookie('refresh_token').value;
             if (!refreshToken) return false;
-
-            try {
-                const refreshTokenPayload =
-                    jwtDecode<AuthPayload>(refreshToken);
-
-                if (!refreshTokenPayload) return false;
-                if (refreshTokenPayload.exp * 1000 < Date.now()) return false;
-            } catch (error) {
-                return false;
-            }
-
-            return this.access_token !== '';
+            return this.accessToken !== '';
         },
+
         bearerToken(): string {
-            if (!this.access_token) return '';
-            return `Bearer ${this.access_token}`;
+            if (!this.accessToken) return '';
+            return `Bearer ${this.accessToken}`;
         },
     },
+
     actions: {
         async login(formData: LoginRequestDto) {
-            const data = await useApiPost<LoginResponse>('/auth/login', {
-                body: formData,
-            });
-
+            // const data = await useApiPost<LoginResponse>('/auth/login', {
+            //     body: formData,
+            // });
+            const data = {
+                refreshToken: 'refreshToken',
+                accessToken: 'accessToken',
+                user: {
+                    id: 1,
+                    email: 'p@gmail.com',
+                    name: 'name',
+                    role: Role.Admin,
+                    username: 'username',
+                    avatarUrl: 'avatarUrl',
+                },
+            };
             useCookie('refresh_token', {
                 sameSite: 'strict',
             }).value = data.refreshToken;
 
-            this.access_token = data.accessToken;
-            const payload = jwtDecode<AuthPayload>(data.accessToken);
-            this.user = payload;
-            location.reload();
+            this.accessToken = data.accessToken;
+            // this.user = jwtDecode<AuthUser>(data.accessToken);
+            this.user = data.user;
+            return true;
         },
 
         async refreshToken() {
@@ -103,15 +94,9 @@ export const useAuthStore = defineStore({
 
                 if (!refreshToken) return;
 
-                const refreshTokenPayload =
-                    jwtDecode<AuthPayload>(refreshToken);
+                const refreshTokenPayload = jwtDecode<AuthUser>(refreshToken);
 
                 if (!refreshTokenPayload) {
-                    this.logout();
-                    return;
-                }
-
-                if (refreshTokenPayload.exp * 1000 < Date.now()) {
                     this.logout();
                     return;
                 }
@@ -125,10 +110,10 @@ export const useAuthStore = defineStore({
                     },
                 });
 
-                this.access_token = data.accessToken;
-                const payload = jwtDecode<AuthPayload>(data.accessToken);
+                this.accessToken = data.accessToken;
+                const payload = jwtDecode<AuthUser>(data.accessToken);
 
-                this.access_token = data.accessToken;
+                this.accessToken = data.accessToken;
                 this.user = payload;
             } catch (error) {
                 this.logout();
@@ -150,38 +135,33 @@ export const useAuthStore = defineStore({
                 body: formData,
             });
 
-            useCookie('access_token', {
-                sameSite: 'strict',
-            }).value = data.accessToken;
-            useCookie('refresh_token', {
-                sameSite: 'strict',
-            }).value = data.refreshToken;
-
-            this.access_token = data.accessToken;
-            const payload = jwtDecode<AuthPayload>(data.accessToken);
+            this.accessToken = data.accessToken;
+            const payload = jwtDecode<AuthUser>(data.accessToken);
             this.user = payload;
             location.reload();
         },
 
-        async sendRequestResetPassword(dto: RequestResetPasswordDto) {
+        async sendRequestResetPassword(dto: { email: string }) {
             await useApiPost('/auth/request-reset-password', {
                 body: dto,
             });
         },
 
-        async resetPassword(dto: ResetPasswordDto) {
+        async resetPassword(dto: { token: string; password: string }) {
             await useApiPost('/auth/reset-password', {
                 body: dto,
             });
         },
 
         logout() {
+            this.user = null;
+            this.accessToken = '';
+
             useCookie('refresh_token', {
                 sameSite: 'strict',
             }).value = null;
-            if (process.client) {
-                location.replace('/auth/login');
-            }
+
+            navigateTo('/auth/login');
         },
     },
 });

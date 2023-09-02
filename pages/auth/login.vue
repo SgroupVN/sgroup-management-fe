@@ -1,55 +1,142 @@
-<script setup>
-import { useLayout } from '@/layouts/composables/layout';
-import { ref, computed } from 'vue';
-import AppConfig from '@/layouts/AppConfig.vue';
-const { layoutConfig } = useLayout();
-const email = ref('');
-const password = ref('');
-const checked = ref(false);
-const logoUrl = computed(() => {
-    return `/layout/images/${layoutConfig.darkTheme.value ? 'logo-white' : 'logo-dark'}.svg`;
-});
-
-definePageMeta({
-    layout: false
-});
-</script>
-
 <template>
-    <div class="flex flex-column align-items-center justify-content-center">
-        <img :src="logoUrl" alt="Sakai logo" class="mb-5 w-6rem flex-shrink-0" />
-        <div
-            style="border-radius: 56px; padding: 0.3rem; background: linear-gradient(180deg, var(--primary-color) 10%, rgba(33, 150, 243, 0) 30%)">
-            <div class="w-full surface-card py-8 px-5 sm:px-8" style="border-radius: 53px">
-                <div class="text-center mb-5">
-                    <img src="/demo/images/login/avatar.png" alt="Image" height="50" class="mb-3" />
-                    <div class="text-900 text-3xl font-medium mb-3">Welcome, Isabel!</div>
-                    <span class="text-600 font-medium">Sign in to continue</span>
-                </div>
+    <div class="mt-2 sm:mx-auto sm:w-full sm:max-w-[580px] px-6 sm:px-12">
+        <h2
+            class="text-left text-4xl font-bold leading-9 tracking-tight text-gray-900"
+        >
+            Welcome back! 👋
+        </h2>
+        <span> Please enter log in details below </span>
 
-                <div>
-                    <label for="email1" class="block text-900 text-xl font-medium mb-2">Email</label>
-                    <InputText id="email1" v-model="email" type="text" placeholder="Email address"
-                        class="w-full md:w-30rem mb-5" style="padding: 1rem" />
-
-                    <label for="password1" class="block text-900 font-medium text-xl mb-2">Password</label>
-                    <Password id="password1" v-model="password" placeholder="Password" :toggleMask="true"
-                        class="w-full mb-3" inputClass="w-full" :inputStyle="{ padding: '1rem' }"></Password>
-
-                    <div class="flex align-items-center justify-content-between mb-5 gap-5">
-                        <div class="flex align-items-center">
-                            <Checkbox id="rememberme1" v-model="checked" binary class="mr-2"></Checkbox>
-                            <label for="rememberme1">Remember me</label>
-                        </div>
-                        <a class="font-medium no-underline ml-2 text-right cursor-pointer"
-                            style="color: var(--primary-color)">Forgot password?</a>
+        <!-- Login form data -->
+        <div class="mt-12 sm:mx-auto sm:w-full sm:max-w-[480px]">
+            <div>
+                <form class="space-y-6" method="POST" @submit.prevent="onLogin">
+                    <span class="p-input-icon-left w-full">
+                        <i class="pi pi-user" />
+                        <InputText
+                            v-model="email"
+                            type="text"
+                            placeholder="Username"
+                            class="w-full"
+                            :class="{ 'p-invalid': !isEmailValid }"
+                            :onChange="onDataChange"
+                        />
+                        <small
+                            v-if="!isEmailValid && !!email"
+                            class="p-error"
+                            id="mask-error"
+                            >{{ 'This email is invalid' || '&nbsp;' }}</small
+                        >
+                    </span>
+                    <div>
+                        <span class="p-input-icon-left w-full">
+                            <i class="pi pi-eye" />
+                            <InputText
+                                v-model="password"
+                                type="text"
+                                placeholder="Password"
+                                class="w-full"
+                                :class="{
+                                    'p-invalid': !isPasswordValid,
+                                }"
+                                :onChange="onDataChange"
+                            />
+                        </span>
+                        <small
+                            v-if="!isPasswordValid && !!password"
+                            class="p-error"
+                            id="mask-error"
+                            >{{
+                                'Password must be at least 6 characters' ||
+                                '&nbsp;'
+                            }}</small
+                        >
                     </div>
-                    <Button label="Sign In" class="w-full p-3 text-xl"></Button>
-                </div>
+
+                    <div class="flex items-center justify-between">
+                        <div class="flex align-items-center">
+                            <Checkbox
+                                v-model="rememberMe"
+                                inputId="ingredient1"
+                                name="rememberMe"
+                                value="Cheese"
+                            />
+                            <label for="ingredient1" class="ml-2">
+                                Remember me
+                            </label>
+                        </div>
+
+                        <div class="text-sm leading-6">
+                            <a
+                                href="#"
+                                class="font-semibold text-indigo-600 hover:text-indigo-500"
+                                >Forgot password?</a
+                            >
+                        </div>
+                    </div>
+
+                    <div>
+                        <Button type="submit" label="Sign in" class="w-full" />
+                    </div>
+                </form>
             </div>
+
+            <p class="mt-10 text-center text-sm text-gray-500">
+                Dont' have an account yet?
+                {{ ' ' }}
+                <a
+                    href="/register"
+                    class="font-semibold leading-6 text-indigo-600 hover:text-indigo-500"
+                    >Sign up</a
+                >
+            </p>
         </div>
     </div>
 </template>
+
+<script setup>
+import { useAuthStore } from '@/store/auth';
+import { ref } from 'vue';
+
+const { login } = useAuthStore();
+
+const rememberMe = ref(false);
+const email = ref('');
+const password = ref('');
+
+const isEmailValid = ref(false);
+const isPasswordValid = ref(false);
+
+definePageMeta({
+    layout: 'auth',
+});
+
+const onLogin = async () => {
+    const isDataValid = checkIsDataValid();
+    if (!isDataValid) {
+        return;
+    }
+    const isSuccess = await login({
+        email: email.value,
+        password: password.value,
+        rememberMe: rememberMe.value,
+    });
+
+    if (isSuccess) {
+        navigateTo('/');
+    }
+};
+
+const onDataChange = () => {
+    checkIsDataValid();
+};
+
+const checkIsDataValid = () => {
+    isEmailValid.value = email.value.includes('@');
+    isPasswordValid.value = password.value.trim().length > 6;
+    return isEmailValid.value && isPasswordValid.value;
+};
+</script>
 
 <style scoped>
 .pi-eye {
@@ -60,4 +147,5 @@ definePageMeta({
 .pi-eye-slash {
     transform: scale(1.6);
     margin-right: 1rem;
-}</style>
+}
+</style>
