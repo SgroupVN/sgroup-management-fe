@@ -96,7 +96,7 @@ import TreeTable from 'primevue/treetable';
 import TriStateCheckbox from 'primevue/tristatecheckbox';
 import VirtualScroller from 'primevue/virtualscroller';
 
-import CodeHighlight from '@/components/CodeHighlight.vue';
+import CodeHighlight from '@/components/primes/CodeHighlight.vue';
 
 export default defineNuxtPlugin((nuxtApp) => {
     nuxtApp.vueApp.use(PrimeVue, { ripple: true });
