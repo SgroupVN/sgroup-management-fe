@@ -19,6 +19,12 @@ onMounted(() => {
             name: 'Hard Drive',
             category: 'Electronics',
             quantity: 1
+        },
+        {
+            code: 'A121',
+            name: 'Hard Drive',
+            category: 'Electronics',
+            quantity: 1
         }
     ]
 });
