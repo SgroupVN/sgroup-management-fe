@@ -33,6 +33,12 @@ a {
   text-decoration: none;
 }
 
+input {
+  &:focus {
+    outline: none;
+    box-shadow: none !important;
+  }
+}
 // #region Scroll Bars
 * {
   scrollbar-width: thin;
