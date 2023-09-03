@@ -1,4 +1,5 @@
 ## Pages
+
 Documentation
 
 - all of your web pages go into a pages/ folder at the root directory
