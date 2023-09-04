@@ -1,26 +1,44 @@
 import jwtDecode from "jwt-decode";
 import { defineStore } from "pinia";
-//
+// using .env
 import { Role } from "~/types/enums/Role";
 
 export type LoginRequestDto = {
   username: string;
   password: string;
-  rememberMe: boolean;
 };
 
 export type LoginResponse = {
-  accessToken: string;
-  refreshToken: string;
+  data: {
+    user: {
+      id: string;
+      createdAt: string;
+      updatedAt: string;
+      firstName: string;
+      lastName: string;
+      email: string;
+      avatar: string;
+      phone: string;
+    };
+    token: {
+      accessToken: string;
+      refreshToken: string;
+    };
+  };
+  success: boolean;
 };
 
 export type AuthUser = {
-  id: number;
-  email: string;
-  name: string;
-  role: Role;
+  id: string;
+  createdAt: string;
+  updatedAt: string;
+  firstName: string;
+  lastName: string;
   username: string;
-  avatarUrl: string;
+  email: string;
+  avatar: string;
+  phone: string;
+  isActive?: boolean;
 };
 
 export type RegisterRequestDto = {
@@ -35,9 +53,14 @@ export type RegisterResponse = {
   refreshToken: string;
 };
 
+export enum TokenTitleToStorage {
+  ACCESS_TOKEN = "access_token",
+  REFRESH_TOKEN = "refresh_token",
+}
+
 type AuthData = {
   accessToken: string;
-  user: AuthUser | null;
+  user: object | null;
   loading: boolean;
 };
 
@@ -63,29 +86,30 @@ export const useAuthStore = defineStore({
 
   actions: {
     async login(formData: LoginRequestDto) {
-      // const data = await useApiPost<LoginResponse>('/auth/login', {
-      //     body: formData,
-      // });
-      const data = {
-        refreshToken: "refreshToken",
-        accessToken: "accessToken",
-        user: {
-          id: 1,
-          email: "p@gmail.com",
-          name: "name",
-          role: Role.Admin,
-          username: "username",
-          avatarUrl: "avatarUrl",
-        },
-      };
-      useCookie("refresh_token", {
-        sameSite: "strict",
-      }).value = data.refreshToken;
+      const LOGIN_API_URL = "/auth/login";
+      try {
+        const requestLoginToServer: LoginResponse | any =
+          await useApiPost<LoginResponse>(LOGIN_API_URL, {
+            body: formData,
+          });
+        const responseData = requestLoginToServer.data;
 
-      this.accessToken = data.accessToken;
-      // this.user = jwtDecode<AuthUser>(data.accessToken);
-      this.user = data.user;
-      return true;
+        useCookie(TokenTitleToStorage.REFRESH_TOKEN, {
+          sameSite: "strict",
+        }).value = responseData.token.refreshToken;
+
+        useLocalStorage(
+          TokenTitleToStorage.ACCESS_TOKEN,
+          responseData.token.accessToken,
+        );
+
+        this.accessToken = responseData.token.accessToken;
+        this.user = responseData.user;
+
+        return true;
+      } catch (error) {
+        return false;
+      }
     },
 
     async refreshToken() {

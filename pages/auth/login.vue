@@ -1,4 +1,14 @@
 <template>
+  <Dialog
+    v-model:visible="haveLoginError.error"
+    :style="{ width: '450px' }"
+    header="login Error"
+    :modal="true"
+  >
+    <p>
+      {{ haveLoginError.message }}
+    </p>
+  </Dialog>
   <div class="mt-2 sm:mx-auto sm:w-full sm:max-w-[580px] px-6 sm:px-12">
     <h2
       class="text-left text-4xl font-bold leading-9 tracking-tight text-gray-900"
@@ -16,7 +26,7 @@
             <InputText
               v-model="email"
               type="text"
-              placeholder="Username"
+              placeholder="Email"
               class="w-full"
               :class="{ 'p-invalid': !isEmailValid }"
               :onChange="onDataChange"
@@ -33,7 +43,7 @@
               <i class="pi pi-eye" />
               <InputText
                 v-model="password"
-                type="text"
+                type="password"
                 placeholder="Password"
                 class="w-full"
                 :class="{
@@ -102,6 +112,11 @@ const password = ref("");
 const isEmailValid = ref(false);
 const isPasswordValid = ref(false);
 
+const haveLoginError = ref({
+  error: false,
+  message: null,
+});
+
 definePageMeta({
   layout: "auth",
 });
@@ -114,10 +129,15 @@ const onLogin = async () => {
   const isSuccess = await login({
     email: email.value,
     password: password.value,
-    rememberMe: rememberMe.value,
   });
+  console.log("success", isSuccess);
 
-  if (isSuccess) {
+  if (!isSuccess) {
+    haveLoginError.value = {
+      error: true,
+      message: "Invalid Email or Password, Please check again",
+    };
+  } else {
     navigateTo("/");
   }
 };
@@ -128,7 +148,7 @@ const onDataChange = () => {
 
 const checkIsDataValid = () => {
   isEmailValid.value = email.value.includes("@");
-  isPasswordValid.value = password.value.trim().length > 6;
+  isPasswordValid.value = password.value.trim().length >= 6;
   return isEmailValid.value && isPasswordValid.value;
 };
 </script>
