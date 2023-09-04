@@ -1,7 +1,7 @@
 import jwtDecode from "jwt-decode";
 import { defineStore } from "pinia";
-// using .env
-import { Role } from "~/types/enums/Role";
+import { AppPermission } from "@/types/enums/permission.enum";
+import { DEFAULT_PERMISSIONS } from "@/types/constants/permission.const";
 
 export type LoginRequestDto = {
   username: string;
@@ -39,6 +39,8 @@ export type AuthUser = {
   avatar: string;
   phone: string;
   isActive?: boolean;
+  avatarUrl: string;
+  permissions: AppPermission[];
 };
 
 export type RegisterRequestDto = {
@@ -68,11 +70,13 @@ export const useAuthStore = defineStore({
   id: "auth",
   state: () =>
     ({
-      user: {},
+      user: {
+        permissions: DEFAULT_PERMISSIONS,
+      },
       accessToken: "",
     }) as AuthData,
   getters: {
-    isAuth(): Boolean {
+    isAuth(): boolean {
       const refreshToken = useCookie("refresh_token").value;
       if (!refreshToken) return false;
       return this.accessToken !== "";
@@ -186,6 +190,15 @@ export const useAuthStore = defineStore({
       }).value = null;
 
       navigateTo("/auth/login");
+    },
+
+    async loadUserData() {
+      const data = await useApiGet<AuthUser>("/auth/me");
+      this.user = data;
+    },
+
+    hasPermission(permission: AppPermission) {
+      return this.user?.permissions?.includes(permission);
     },
   },
 });

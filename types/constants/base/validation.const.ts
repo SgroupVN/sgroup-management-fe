@@ -1,4 +1,4 @@
-import { roles } from "./auth";
+import { roles } from "./auth.const";
 /**
  * Element UI use async validator in its form validation
  * See docs:
