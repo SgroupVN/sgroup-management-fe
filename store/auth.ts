@@ -12,6 +12,7 @@ export type LoginRequestDto = {
 export type LoginResponse = {
   accessToken: string;
   refreshToken: string;
+  user: AuthUser;
 };
 
 export type AuthUser = {
@@ -63,21 +64,10 @@ export const useAuthStore = defineStore({
 
   actions: {
     async login(formData: LoginRequestDto) {
-      // const data = await useApiPost<LoginResponse>('/auth/login', {
-      //     body: formData,
-      // });
-      const data = {
-        refreshToken: "refreshToken",
-        accessToken: "accessToken",
-        user: {
-          id: 1,
-          email: "p@gmail.com",
-          name: "name",
-          role: Role.Admin,
-          username: "username",
-          avatarUrl: "avatarUrl",
-        },
-      };
+      const data = await useApiPost<LoginResponse>("/auth/login", {
+        body: formData,
+      });
+
       useCookie("refresh_token", {
         sameSite: "strict",
       }).value = data.refreshToken;

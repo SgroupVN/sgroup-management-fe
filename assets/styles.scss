@@ -46,18 +46,18 @@ input {
 }
 
 ::-webkit-scrollbar {
-  width: 8px;
+  width: 6px;
   height: 6px;
 }
 
 ::-webkit-scrollbar-track {
-  background: #fff;
+  background: transparent;
 }
 
 ::-webkit-scrollbar-thumb {
   background-color: #ccc;
   border-radius: 6px;
-  border: 3px solid #fff;
+  border: 1px solid #ccc;
 }
 
 // #endregion
