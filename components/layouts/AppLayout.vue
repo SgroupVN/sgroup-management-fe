@@ -12,7 +12,7 @@ import AppSidebar from "./AppSidebar.vue";
     </div>
 
     <div
-      class="layout-main-container top-20 mr-4 my-4 ml-[340px] transition-all relative overflow-auto"
+      class="layout-main-container top-20 mr-4 my-4 ml-[340px] transition-all relative overflow-y-auto overflow-x-hidden"
     >
       <div class="content">
         <router-view></router-view>
