@@ -37,7 +37,7 @@ const toggle = (event) => {
     class="layout-topbar fixed h-20 left-0 top-0 w-full px-4 py-2 flex items-center justify-between shadow-md bg-white"
   >
     <router-link to="/" class="flex items-center">
-      <img src="../../logo/logo-sgroup-black.png" class="h-14" />
+      <img src="../../public/logo/logo-sgroup-black.png" class="h-14" />
     </router-link>
 
     <div class="flex gap-2 items-center">
