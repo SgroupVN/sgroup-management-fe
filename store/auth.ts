@@ -2,75 +2,25 @@ import jwtDecode from "jwt-decode";
 import { defineStore } from "pinia";
 import { AppPermission } from "@/types/enums/permission.enum";
 import { DEFAULT_PERMISSIONS } from "@/types/constants/permission.const";
-
-export type LoginRequestDto = {
-  username: string;
-  password: string;
-};
-
-export type LoginResponse = {
-  data: {
-    user: {
-      id: string;
-      createdAt: string;
-      updatedAt: string;
-      firstName: string;
-      lastName: string;
-      email: string;
-      avatar: string;
-      phone: string;
-    };
-    token: {
-      accessToken: string;
-      refreshToken: string;
-    };
-  };
-  success: boolean;
-};
-
-export type AuthUser = {
-  id: string;
-  createdAt: string;
-  updatedAt: string;
-  firstName: string;
-  lastName: string;
-  username: string;
-  email: string;
-  avatar: string;
-  phone: string;
-  isActive?: boolean;
-  avatarUrl: string;
-  role: Role;
-};
-
-export type Role = {
-  id: string;
-  name: string;
-  permissions: AppPermission[];
-};
-
-export type RegisterRequestDto = {
-  email: string;
-  name: string;
-  username: string;
-  password: string;
-};
-
-export type RegisterResponse = {
-  accessToken: string;
-  refreshToken: string;
-};
+import {
+  AuthUser,
+  LoginRequestDto,
+  LoginResponse,
+  RegisterRequestDto,
+  RegisterResponse,
+  UserResponseModel,
+} from "@/types/models/auth.model";
 
 export enum TokenTitleToStorage {
   ACCESS_TOKEN = "access_token",
   REFRESH_TOKEN = "refresh_token",
 }
 
-type AuthData = {
+export interface AuthData {
   accessToken: string;
   user: AuthUser | null;
   loading: boolean;
-};
+}
 
 export const useAuthStore = defineStore({
   id: "auth",
@@ -83,13 +33,14 @@ export const useAuthStore = defineStore({
     isAuth(): boolean {
       const refreshToken = useCookie("refresh_token").value;
       if (!refreshToken) return false;
+      // TODO: change to check in local storage
       return this.accessToken !== "";
     },
 
     bearerToken(): string {
       if (!this.accessToken) {
         this.accessToken =
-          window.localStorage.getItem(TokenTitleToStorage.ACCESS_TOKEN) ?? "";
+          window?.localStorage.getItem(TokenTitleToStorage.ACCESS_TOKEN) ?? "";
       }
       return `Bearer ${this.accessToken}`;
     },
@@ -115,14 +66,13 @@ export const useAuthStore = defineStore({
         );
 
         this.accessToken = responseData.token.accessToken;
-        this.user = responseData.user;
+        this.setUserInfo(responseData.user);
 
         return true;
       } catch (error) {
         return false;
       }
     },
-
     async refreshToken() {
       try {
         const refreshToken = useCookie("refresh_token").value;
@@ -196,19 +146,21 @@ export const useAuthStore = defineStore({
         sameSite: "strict",
       }).value = null;
 
+      useLocalStorage(TokenTitleToStorage.ACCESS_TOKEN, null);
+
       navigateTo("/auth/login");
     },
 
     async loadUserData() {
-      const res = await useApiGet<AuthUser>("/auth/me");
-      if (!res.data.role?.permissions) {
-        res.data.role.permissions = DEFAULT_PERMISSIONS;
-      } else {
-        res.data.role.permissions = res.data.role.permissions.map(
-          (item) => item as AppPermission,
-        );
-      }
-      this.user = res.data;
+      const res = await useApiGet<UserResponseModel>("/auth/me");
+      this.setUserInfo(res.data);
+    },
+
+    setUserInfo(auth: UserResponseModel) {
+      this.user = auth;
+      this.user.role.permissions = this.user.role.permissions
+        ? this.user.role.permissions.map((item) => item.name as AppPermission)
+        : DEFAULT_PERMISSIONS;
     },
 
     async hasPermission(permission: AppPermission) {

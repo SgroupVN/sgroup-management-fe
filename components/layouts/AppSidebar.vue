@@ -7,7 +7,7 @@
 </template>
 
 <script setup lang="ts">
-import AppMenuItem from "./AppMenuItem.vue";
+import AppMenuItem from "@/components/layouts/AppMenuItem.vue";
 import { useAuthStore } from "@/store/auth";
 import { ref, onMounted } from "vue";
 import { SIDEBAR_ITEMS } from "@/types/constants/base/sidebar.const";
@@ -20,29 +20,30 @@ onMounted(() => {
   loadMenuItems();
 });
 
-const loadMenuItems = () => {
-  const items = SIDEBAR_ITEMS.filter((menuItem) => {
-    let hasPermission = menuItem?.permission
-      ? auth.hasPermission(menuItem.permission)
+const loadMenuItems = async () => {
+  menuItems.value = await filterMenuItems(SIDEBAR_ITEMS);
+};
+
+const filterMenuItems = async (menuItems) => {
+  const filteredItems = [];
+  for (const menuItem of menuItems) {
+    let hasPermission = menuItem.permission
+      ? await auth.hasPermission(menuItem.permission)
       : true;
     if (hasPermission) {
-      // if has sub menu
-      if (menuItem?.items?.length) {
-        const subMenuItems = menuItem.items.filter((subMenuItem) => {
-          return subMenuItem.permission
-            ? auth.hasPermission(subMenuItem.permission)
-            : true;
-        });
-        menuItem.items = subMenuItems;
-      }
-      if (menuItem?.items?.length) {
-        return true;
+      if (menuItem.items && menuItem.items.length) {
+        const subMenuItems = await filterMenuItems(menuItem.items);
+        if (subMenuItems.length) {
+          menuItem.items = subMenuItems;
+          filteredItems.push(menuItem);
+        }
+      } else {
+        filteredItems.push(menuItem);
       }
     }
-    return false;
-  });
+  }
 
-  menuItems.value = items;
+  return filteredItems;
 };
 </script>
 
