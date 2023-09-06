@@ -1,10 +1,10 @@
 import { AppPermission } from "@/types/enums/permission.enum";
 
 export const DEFAULT_PERMISSIONS = [
-  AppPermission.CanViewListMembers,
-  AppPermission.CanCreateMember,
-  AppPermission.CanUpdateMember,
-  AppPermission.CanDeleteMember,
+  AppPermission.CanManageUser,
+  AppPermission.CanCreateUser,
+  AppPermission.CanUpdateUser,
+  AppPermission.CanDeleteUser,
   //
   AppPermission.CanViewListRoles,
   AppPermission.CanCreateRole,

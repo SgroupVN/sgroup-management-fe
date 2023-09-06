@@ -1,9 +1,9 @@
 export enum AppPermission {
   // Member
-  CanViewListMembers = "CanViewListMembers",
-  CanCreateMember = "CanCreateMember",
-  CanUpdateMember = "CanUpdateMember",
-  CanDeleteMember = "CanDeleteMember",
+  CanManageUser = "CanManageUser",
+  CanCreateUser = "CanCreateUser",
+  CanUpdateUser = "CanUpdateUser",
+  CanDeleteUser = "CanDeleteUser",
   // Role
   CanViewListRoles = "CanViewListRoles",
   CanCreateRole = "CanCreateRole",

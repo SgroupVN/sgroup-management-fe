@@ -30,6 +30,17 @@ const items = ref([
 const toggle = (event) => {
   menu.value.toggle(event);
 };
+
+const user = computed(() => {
+  return useAuthStore().user;
+});
+
+// fullName
+const fullName = computed(() => {
+  return user.value?.firstName || user.value?.lastName
+    ? user.value?.firstName + " " + user.value?.lastName
+    : "";
+});
 </script>
 
 <template>
@@ -48,7 +59,7 @@ const toggle = (event) => {
         aria-haspopup="true"
         aria-controls="overlay_menu"
       >
-        <i class="pi pi-user mr-2"></i> Profile
+        <i class="pi pi-user mr-2"></i> {{ fullName }}
       </Button>
       <Menu ref="menu" id="overlay_menu" :model="items" :popup="true" />
     </div>

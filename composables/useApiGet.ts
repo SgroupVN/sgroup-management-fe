@@ -1,3 +1,4 @@
+import { BaseModel } from "@/types/models/base/base.model";
 import { getApiBaseUrl } from "./../utils/config";
 import { useAuthStore } from "~/store/auth";
 
@@ -7,7 +8,7 @@ export default function useApiGet<T>(url: string, opts: any = {}) {
   const defaultHeaders = {
     Authorization: bearerToken,
   };
-  return $fetch<T>(url, {
+  return $fetch<BaseModel<T>>(url, {
     ...opts,
     method: "get",
     headers: {

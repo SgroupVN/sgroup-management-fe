@@ -13,13 +13,13 @@ export const SIDEBAR_ITEMS: SidebarMenuItemModel[] = [
       {
         label: "Members",
         icon: "pi pi-fw pi-users",
-        permission: AppPermission.CanViewListMembers,
+        permission: AppPermission.CanDeleteRole,
         items: [
           {
             label: "Group Members",
             icon: "pi pi-fw pi-users",
             to: "/members",
-            permission: AppPermission.CanViewListMembers,
+            permission: AppPermission.CanDeleteRole,
           },
           {
             label: "Accessability",

@@ -40,6 +40,12 @@ export type AuthUser = {
   phone: string;
   isActive?: boolean;
   avatarUrl: string;
+  role: Role;
+};
+
+export type Role = {
+  id: string;
+  name: string;
   permissions: AppPermission[];
 };
 
@@ -62,7 +68,7 @@ export enum TokenTitleToStorage {
 
 type AuthData = {
   accessToken: string;
-  user: object | null;
+  user: AuthUser | null;
   loading: boolean;
 };
 
@@ -70,9 +76,7 @@ export const useAuthStore = defineStore({
   id: "auth",
   state: () =>
     ({
-      user: {
-        permissions: DEFAULT_PERMISSIONS,
-      },
+      user: {},
       accessToken: "",
     }) as AuthData,
   getters: {
@@ -83,7 +87,10 @@ export const useAuthStore = defineStore({
     },
 
     bearerToken(): string {
-      if (!this.accessToken) return "";
+      if (!this.accessToken) {
+        this.accessToken =
+          window.localStorage.getItem(TokenTitleToStorage.ACCESS_TOKEN) ?? "";
+      }
       return `Bearer ${this.accessToken}`;
     },
   },
@@ -193,12 +200,23 @@ export const useAuthStore = defineStore({
     },
 
     async loadUserData() {
-      const data = await useApiGet<AuthUser>("/auth/me");
-      this.user = data;
+      const res = await useApiGet<AuthUser>("/auth/me");
+      if (!res.data.role?.permissions) {
+        res.data.role.permissions = DEFAULT_PERMISSIONS;
+      } else {
+        res.data.role.permissions = res.data.role.permissions.map(
+          (item) => item as AppPermission,
+        );
+      }
+      this.user = res.data;
     },
 
-    hasPermission(permission: AppPermission) {
-      return this.user?.permissions?.includes(permission);
+    async hasPermission(permission: AppPermission) {
+      // remove when handle save data after login
+      if (!this.user || !this.user?.role?.id) {
+        await this.loadUserData();
+      }
+      return this.user?.role?.permissions?.includes(permission);
     },
   },
 });

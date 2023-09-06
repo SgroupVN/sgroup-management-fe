@@ -25,7 +25,6 @@ const loadMenuItems = () => {
     let hasPermission = menuItem?.permission
       ? auth.hasPermission(menuItem.permission)
       : true;
-    console.log("hasPermission", hasPermission);
     if (hasPermission) {
       // if has sub menu
       if (menuItem?.items?.length) {
@@ -36,7 +35,6 @@ const loadMenuItems = () => {
         });
         menuItem.items = subMenuItems;
       }
-
       if (menuItem?.items?.length) {
         return true;
       }
