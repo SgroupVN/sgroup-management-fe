@@ -33,12 +33,11 @@ export const useAuthStore = defineStore({
     isAuth(): boolean {
       const refreshToken = useCookie("refresh_token").value;
       if (!refreshToken) return false;
-      // TODO: change to check in local storage
       return this.accessToken !== "";
     },
 
     bearerToken(): string {
-      if (!this.accessToken) {
+      if (!this.accessToken && process?.client) {
         this.accessToken =
           window?.localStorage.getItem(TokenTitleToStorage.ACCESS_TOKEN) ?? "";
       }
@@ -50,7 +49,7 @@ export const useAuthStore = defineStore({
     async login(formData: LoginRequestDto) {
       const LOGIN_API_URL = "/auth/login";
       try {
-        const requestLoginToServer: LoginResponse | any =
+        const requestLoginToServer: LoginResponse =
           await useApiPost<LoginResponse>(LOGIN_API_URL, {
             body: formData,
           });
@@ -66,7 +65,7 @@ export const useAuthStore = defineStore({
         );
 
         this.accessToken = responseData.token.accessToken;
-        this.setUserInfo(responseData.user);
+        this.loadUserData();
 
         return true;
       } catch (error) {
@@ -163,12 +162,8 @@ export const useAuthStore = defineStore({
         : DEFAULT_PERMISSIONS;
     },
 
-    async hasPermission(permission: AppPermission) {
-      // remove when handle save data after login
-      if (!this.user || !this.user?.role?.id) {
-        await this.loadUserData();
-      }
-      return this.user?.role?.permissions?.includes(permission);
+    hasPermission(permission: AppPermission) {
+      return this.user?.role?.permissions?.includes(permission) ?? false;
     },
   },
 });

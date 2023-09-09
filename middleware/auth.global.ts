@@ -5,8 +5,6 @@ export default defineNuxtRouteMiddleware(async (to) => {
 
   const isAuth = computed(() => auth.isAuth);
 
-  console.log("isAuth", isAuth.value);
-
   if (!isAuth.value && !to.fullPath.startsWith("/auth")) {
     return navigateTo("/auth/login");
   }

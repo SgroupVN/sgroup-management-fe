@@ -4,6 +4,10 @@ import { defineNuxtConfig } from "nuxt/config";
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
   ssr: true,
+  typescript: {
+    strict: false,
+    typeCheck: false,
+  },
   devtools: { enabled: true },
   imports: {
     autoImport: true,
