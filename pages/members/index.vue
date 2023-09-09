@@ -1,4 +1,12 @@
 <script setup>
+definePageMeta({
+  middleware: ["permission"],
+  meta: {
+    permissions: [AppPermission.CanManageUser, AppPermission.CanCreateUser],
+  },
+});
+
+import { AppPermission } from "@/types/enums/permission.enum";
 import { ProductService } from "@/service/ProductService";
 import { onMounted, ref } from "vue";
 const products = ref(null);
