@@ -24,16 +24,24 @@ export interface AuthData {
 
 export const useAuthStore = defineStore({
   id: "auth",
+
   state: () =>
     ({
       user: {},
       accessToken: "",
     }) as AuthData,
+
   getters: {
-    isAuth(): boolean {
-      const refreshToken = useCookie("refresh_token").value;
-      if (!refreshToken) return false;
-      return this.accessToken !== "";
+    async isAuth(): Promise<boolean> {
+      const refreshToken = useCookie(TokenTitleToStorage.REFRESH_TOKEN).value;
+      const accessToken =
+        (useLocalStorage(TokenTitleToStorage.ACCESS_TOKEN, "")
+          .value as string) || "";
+      if (!refreshToken || !accessToken) return false;
+      if (accessToken && !this.access_token) {
+        this.restoreUserDataUsingAccesstoken(accessToken);
+      }
+      return !!this.access_token;
     },
 
     bearerToken(): string {
@@ -42,6 +50,10 @@ export const useAuthStore = defineStore({
           window?.localStorage.getItem(TokenTitleToStorage.ACCESS_TOKEN) ?? "";
       }
       return `Bearer ${this.accessToken}`;
+    },
+
+    getCurrentUser(): AuthUser | null {
+      return this.user;
     },
   },
 
@@ -59,7 +71,7 @@ export const useAuthStore = defineStore({
           sameSite: "strict",
         }).value = responseData.token.refreshToken;
 
-        useLocalStorage(
+        await useLocalStorage(
           TokenTitleToStorage.ACCESS_TOKEN,
           responseData.token.accessToken,
         );
@@ -74,7 +86,7 @@ export const useAuthStore = defineStore({
     },
     async refreshToken() {
       try {
-        const refreshToken = useCookie("refresh_token").value;
+        const refreshToken = useCookie(TokenTitleToStorage.REFRESH_TOKEN).value;
 
         if (!refreshToken) return;
 
@@ -137,11 +149,34 @@ export const useAuthStore = defineStore({
       });
     },
 
+    async authMe(access_token: string) {
+      try {
+        const data = await useApiGet<AuthUser>("/auth/me", {
+          headers: {
+            Authorization: `Bearer ${access_token}`,
+          },
+        });
+        return data;
+      } catch (error) {
+        console.error("Error fetching user data:", error);
+        throw error;
+      }
+    },
+
+    async restoreUserDataUsingAccesstoken(access_token: string) {
+      if (access_token) {
+        const user = await this.authMe(access_token);
+        this.user = user;
+        this.accessToken = access_token;
+      }
+    },
+
     logout() {
+      // currently logged out having same issues
       this.user = null;
       this.accessToken = "";
 
-      useCookie("refresh_token", {
+      useCookie(TokenTitleToStorage.REFRESH_TOKEN, {
         sameSite: "strict",
       }).value = null;
 
