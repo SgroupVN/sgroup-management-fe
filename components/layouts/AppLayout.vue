@@ -14,11 +14,11 @@ import AppSidebar from "./AppSidebar.vue";
     <div
       class="layout-main-container top-20 mr-4 my-4 ml-[340px] transition-all relative overflow-y-auto overflow-x-hidden"
     >
-      <div class="content">
+      <div class="content h-full">
         <router-view></router-view>
       </div>
 
-      <app-footer></app-footer>
+      <!-- <app-footer></app-footer> -->
     </div>
   </div>
 </template>

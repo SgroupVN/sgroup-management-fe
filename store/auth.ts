@@ -1,3 +1,4 @@
+import { access } from "fs";
 import jwtDecode from "jwt-decode";
 import { defineStore } from "pinia";
 import { AppPermission } from "@/types/enums/permission.enum";
@@ -33,18 +34,25 @@ export const useAuthStore = defineStore({
     isAuth(): boolean {
       const refreshToken = useCookie("refresh_token").value;
       if (!refreshToken) return false;
+      if (!this.accessToken) {
+        this.accessToken = useLocalStorage(
+          TokenTitleToStorage.ACCESS_TOKEN,
+          "",
+        );
+      }
       return this.accessToken !== "";
     },
 
     bearerToken(): string {
       if (!this.accessToken && process?.client) {
-        this.accessToken =
-          window?.localStorage.getItem(TokenTitleToStorage.ACCESS_TOKEN) ?? "";
+        this.accessToken = useLocalStorage(
+          TokenTitleToStorage.ACCESS_TOKEN,
+          "",
+        );
       }
       return `Bearer ${this.accessToken}`;
     },
   },
-
   actions: {
     async login(formData: LoginRequestDto) {
       const LOGIN_API_URL = "/auth/login";
@@ -105,13 +113,8 @@ export const useAuthStore = defineStore({
     },
 
     async initAuth() {
-      this.loading = true;
-      try {
-        await this.refreshToken();
-      } catch (err) {
-        this.logout();
-      }
-      this.loading = false;
+      if (!this.isAuth) return;
+      await this.loadUserData();
     },
 
     async register(formData: RegisterRequestDto) {
@@ -160,6 +163,7 @@ export const useAuthStore = defineStore({
       this.user.role.permissions = this.user.role.permissions
         ? this.user.role.permissions.map((item) => item.name as AppPermission)
         : DEFAULT_PERMISSIONS;
+      console.log(this.user);
     },
 
     hasPermission(permission: AppPermission) {
