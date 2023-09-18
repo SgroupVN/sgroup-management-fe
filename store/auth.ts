@@ -25,22 +25,25 @@ export interface AuthData {
 
 export const useAuthStore = defineStore({
   id: "auth",
+
   state: () =>
     ({
       user: {},
       accessToken: "",
     }) as AuthData,
+
   getters: {
-    isAuth(): boolean {
-      const refreshToken = useCookie("refresh_token").value;
-      if (!refreshToken) return false;
-      if (!this.accessToken) {
-        this.accessToken = useLocalStorage(
-          TokenTitleToStorage.ACCESS_TOKEN,
-          "",
-        );
+    async isAuth(state): Promise<boolean> {
+      const refreshToken = await useCookie(TokenTitleToStorage.REFRESH_TOKEN)
+        .value;
+      const accessToken =
+        (await (useLocalStorage(TokenTitleToStorage.ACCESS_TOKEN, "")
+          .value as string)) || "";
+      if (!refreshToken || !accessToken) return false;
+      if (accessToken && !state.accessToken) {
+        this.restoreUserDataUsingAccesstoken(accessToken);
       }
-      return this.accessToken !== "";
+      return !!state.accessToken;
     },
 
     bearerToken(): string {
@@ -51,6 +54,10 @@ export const useAuthStore = defineStore({
         );
       }
       return `Bearer ${this.accessToken}`;
+    },
+
+    getCurrentUser(): AuthUser | null {
+      return this.user;
     },
   },
   actions: {
@@ -67,7 +74,7 @@ export const useAuthStore = defineStore({
           sameSite: "strict",
         }).value = responseData.token.refreshToken;
 
-        useLocalStorage(
+        window.localStorage.setItem(
           TokenTitleToStorage.ACCESS_TOKEN,
           responseData.token.accessToken,
         );
@@ -82,7 +89,7 @@ export const useAuthStore = defineStore({
     },
     async refreshToken() {
       try {
-        const refreshToken = useCookie("refresh_token").value;
+        const refreshToken = useCookie(TokenTitleToStorage.REFRESH_TOKEN).value;
 
         if (!refreshToken) return;
 
@@ -140,17 +147,40 @@ export const useAuthStore = defineStore({
       });
     },
 
-    logout() {
+    async authMe(access_token: string) {
+      try {
+        const data = await useApiGet<AuthUser>("/auth/me", {
+          headers: {
+            Authorization: `Bearer ${access_token}`,
+          },
+        });
+        return data;
+      } catch (error) {
+        console.error("Error fetching user data:", error);
+        throw error;
+      }
+    },
+
+    async restoreUserDataUsingAccesstoken(access_token: string) {
+      if (access_token) {
+        const user = await this.authMe(access_token);
+        this.user = user.data;
+        this.accessToken = access_token;
+      }
+    },
+
+    async logout() {
+      // currently logged out having same issues
       this.user = null;
       this.accessToken = "";
 
-      useCookie("refresh_token", {
+      useCookie(TokenTitleToStorage.REFRESH_TOKEN, {
         sameSite: "strict",
       }).value = null;
 
-      useLocalStorage(TokenTitleToStorage.ACCESS_TOKEN, null);
+      await useLocalStorage(TokenTitleToStorage.ACCESS_TOKEN, null);
 
-      navigateTo("/auth/login");
+      await navigateTo("/auth/login");
     },
 
     async loadUserData() {
