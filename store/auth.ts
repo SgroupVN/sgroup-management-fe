@@ -32,16 +32,17 @@ export const useAuthStore = defineStore({
     }) as AuthData,
 
   getters: {
-    async isAuth(): Promise<boolean> {
-      const refreshToken = useCookie(TokenTitleToStorage.REFRESH_TOKEN).value;
+    async isAuth(state): Promise<boolean> {
+      const refreshToken = await useCookie(TokenTitleToStorage.REFRESH_TOKEN)
+        .value;
       const accessToken =
-        (useLocalStorage(TokenTitleToStorage.ACCESS_TOKEN, "")
-          .value as string) || "";
+        (await (useLocalStorage(TokenTitleToStorage.ACCESS_TOKEN, "")
+          .value as string)) || "";
       if (!refreshToken || !accessToken) return false;
-      if (accessToken && !this.access_token) {
+      if (accessToken && !state.accessToken) {
         this.restoreUserDataUsingAccesstoken(accessToken);
       }
-      return !!this.access_token;
+      return !!state.accessToken;
     },
 
     bearerToken(): string {
@@ -71,7 +72,7 @@ export const useAuthStore = defineStore({
           sameSite: "strict",
         }).value = responseData.token.refreshToken;
 
-        await useLocalStorage(
+        window.localStorage.setItem(
           TokenTitleToStorage.ACCESS_TOKEN,
           responseData.token.accessToken,
         );
@@ -166,12 +167,12 @@ export const useAuthStore = defineStore({
     async restoreUserDataUsingAccesstoken(access_token: string) {
       if (access_token) {
         const user = await this.authMe(access_token);
-        this.user = user;
+        this.user = user.data;
         this.accessToken = access_token;
       }
     },
 
-    logout() {
+    async logout() {
       // currently logged out having same issues
       this.user = null;
       this.accessToken = "";
@@ -180,9 +181,9 @@ export const useAuthStore = defineStore({
         sameSite: "strict",
       }).value = null;
 
-      useLocalStorage(TokenTitleToStorage.ACCESS_TOKEN, null);
+      await useLocalStorage(TokenTitleToStorage.ACCESS_TOKEN, null);
 
-      navigateTo("/auth/login");
+      await navigateTo("/auth/login");
     },
 
     async loadUserData() {

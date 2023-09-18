@@ -1,15 +1,19 @@
 import { useAuthStore } from "~/store/auth";
 
-export default defineNuxtRouteMiddleware(async (to) => {
+export default defineNuxtRouteMiddleware(async (to, from) => {
   const auth = useAuthStore();
 
-  const isAuth = computed(() => auth.isAuth);
+  const isAuth = await auth.isAuth;
 
-  if (!isAuth.value && !to.fullPath.startsWith("/auth")) {
-    return navigateTo("/auth/login");
+  if (
+    !isAuth &&
+    !to.fullPath.startsWith("/auth") &&
+    !from.fullPath.startsWith("/auth")
+  ) {
+    await navigateTo("/auth/login");
   }
 
-  if (isAuth.value && to.fullPath.startsWith("/auth")) {
-    return navigateTo("/");
+  if (isAuth && to.fullPath.startsWith("/auth")) {
+    await navigateTo("/");
   }
 });
