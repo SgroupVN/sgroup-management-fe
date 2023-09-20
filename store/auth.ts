@@ -47,11 +47,10 @@ export const useAuthStore = defineStore({
     },
 
     bearerToken(): string {
-      if (!this.accessToken && process?.client) {
-        this.accessToken = useLocalStorage(
-          TokenTitleToStorage.ACCESS_TOKEN,
-          "",
-        );
+      if (!this.accessToken) {
+        this.accessToken =
+          (useLocalStorage(TokenTitleToStorage.ACCESS_TOKEN, "")
+            .value as string) || "";
       }
       return `Bearer ${this.accessToken}`;
     },
@@ -184,8 +183,14 @@ export const useAuthStore = defineStore({
     },
 
     async loadUserData() {
-      const res = await useApiGet<UserResponseModel>("/auth/me");
-      this.setUserInfo(res.data);
+      try {
+        const res: any = await useApiGet<UserResponseModel>("/auth/me");
+        if (res?.statusCode === 401) {
+          this.logout();
+        } else this.setUserInfo(res.data);
+      } catch (err) {
+        console.error("Error fetching user data:", err);
+      }
     },
 
     setUserInfo(auth: UserResponseModel) {
