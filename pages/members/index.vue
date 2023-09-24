@@ -24,7 +24,7 @@
     </div>
 
     <DataTable
-      :value="users"
+      :value="members"
       :rows="5"
       :paginator="true"
       responsiveLayout="scroll"
@@ -32,6 +32,7 @@
       scrollable
       removableSort
     >
+      <template #empty> No member found. </template>
       <Column
         field="name"
         frozen
@@ -44,37 +45,56 @@
         header="Email"
         :sortable="true"
         style="width: 20%; min-width: 200px"
-      ></Column>
+        ><template #body="{ data }">
+          {{ data.email || "-" }}
+        </template></Column
+      >
       <Column
         field="dateOfBirth"
         header="Date of Birth"
         :sortable="true"
         style="width: 15%; min-width: 150px"
-      ></Column>
+        ><template #body="{ data }">
+          {{ data.dateOfBirth || "-" }}
+        </template></Column
+      >
       <Column
         field="phone"
         header="Phone"
         :sortable="true"
         style="width: 15%; min-width: 150px"
-      ></Column>
+        ><template #body="{ data }">
+          {{ data.phone || "-" }}
+        </template></Column
+      >
       <Column
         field="status"
         header="Status"
         :sortable="true"
         style="width: 10%; min-width: 150px"
-      ></Column>
+        ><template #body="{ data }">
+          {{ data.status || "-" }}
+        </template></Column
+      >
       <Column
         field="lateCount"
         header="Late Count"
         :sortable="true"
         style="width: 10%; min-width: 150px"
-      ></Column>
+      >
+        <template #body="{ data }">
+          {{ data.lateCount || "-" }}
+        </template></Column
+      >
       <Column
         field="major"
         header="Major"
         :sortable="true"
         style="width: 15%; min-width: 150px"
-      ></Column>
+        ><template #body="{ data }">
+          {{ data.major || "-" }}
+        </template></Column
+      >
       <Column style="flex: 0 0 4rem" frozen>
         <template #body="{ data, index }">
           <Button
@@ -199,7 +219,7 @@ import { MEMBER_PROPERTIES } from "@/types/constants/members/member-properties.c
 import permission from "@/middleware/permission";
 
 const toast = useToast();
-const users = ref(null);
+const members = ref(null);
 const importedColumns = ref([]);
 const importedData = ref([]);
 const memberProperties = ref(MEMBER_PROPERTIES);
@@ -208,7 +228,7 @@ const isShowAddNewMemberDialog = ref(false);
 const isShowImportConfigDialog = ref(false);
 
 onMounted(() => {
-  users.value = MembersService.getAllMembers();
+  members.value = MembersService.getAllMembers();
 });
 
 const editMember = (data, index) => {
@@ -293,6 +313,9 @@ const onImportClicked = () => {
     detail: "Message Content",
     life: 3000,
   });
+  // TODO: update to integrate API with BE
+  members.value = [...members.value, ...createMembersByImportedData()];
+  //
   isShowImportConfigDialog.value = false;
 };
 
@@ -304,9 +327,20 @@ const updateMemberPropertiesSelection = () => {
   const mappedColumns = importedColumns.value
     .filter((importedColumn) => importedColumn.mapTo)
     .map((importedColumn) => importedColumn.mapTo.key);
-  console.log(mappedColumns);
   memberProperties.value = MEMBER_PROPERTIES.filter(
     (memberProperty) => !mappedColumns.includes(memberProperty.key)
   );
+};
+
+const createMembersByImportedData = () => {
+  const members = importedData.value.map((data) => {
+    const member = {};
+    importedColumns.value.forEach((importedColumn) => {
+      member[importedColumn.mapTo?.key] = data[importedColumn.key];
+    });
+    return member;
+  });
+
+  return members;
 };
 </script>
