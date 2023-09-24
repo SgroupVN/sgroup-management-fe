@@ -460,7 +460,7 @@ const confirmDeleteSelected = () => {
 };
 const deleteSelectedProducts = () => {
   products.value = products.value.filter(
-    (val) => !selectedProducts.value.includes(val),
+    (val) => !selectedProducts.value.includes(val)
   );
   deleteProductsDialog.value = false;
   selectedProducts.value = null;

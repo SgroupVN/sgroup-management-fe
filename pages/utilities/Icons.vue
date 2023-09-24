@@ -8,7 +8,7 @@ const filter = ref(null);
 const filteredIcons = computed(() => {
   if (filter.value)
     return icons.value.filter(
-      (icon) => icon.properties.name.indexOf(filter.value.toLowerCase()) > -1,
+      (icon) => icon.properties.name.indexOf(filter.value.toLowerCase()) > -1
     );
   else return icons.value;
 });

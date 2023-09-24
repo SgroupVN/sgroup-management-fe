@@ -75,7 +75,7 @@ export const useAuthStore = defineStore({
 
         window.localStorage.setItem(
           TokenTitleToStorage.ACCESS_TOKEN,
-          responseData.token.accessToken,
+          responseData.token.accessToken
         );
 
         this.accessToken = responseData.token.accessToken;

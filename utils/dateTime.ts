@@ -29,15 +29,15 @@ export function getDateFormalString(date: Date) {
     return date.toLocaleDateString("en-US", { weekday: "long" });
   else if (date > lastMonth)
     return `${Math.floor(
-      (today.getTime() - date.getTime()) / (1000 * 60 * 60 * 24 * 7),
+      (today.getTime() - date.getTime()) / (1000 * 60 * 60 * 24 * 7)
     )} weeks ago`;
   else if (date > lastYear)
     return `${Math.floor(
-      (today.getTime() - date.getTime()) / (1000 * 60 * 60 * 24 * 30),
+      (today.getTime() - date.getTime()) / (1000 * 60 * 60 * 24 * 30)
     )} months ago`;
   else if (date > lastDecade)
     return `${Math.floor(
-      (today.getTime() - date.getTime()) / (1000 * 60 * 60 * 24 * 365),
+      (today.getTime() - date.getTime()) / (1000 * 60 * 60 * 24 * 365)
     )} years ago`;
   else return date.toLocaleDateString("en-US");
 }

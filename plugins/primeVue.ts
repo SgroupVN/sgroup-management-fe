@@ -200,4 +200,10 @@ export default defineNuxtPlugin((nuxtApp) => {
   nuxtApp.vueApp.component("TreeTable", TreeTable);
   nuxtApp.vueApp.component("TriStateCheckbox", TriStateCheckbox);
   nuxtApp.vueApp.component("VirtualScroller", VirtualScroller);
+
+  return {
+    provide: {
+      toast: nuxtApp.vueApp.config.globalProperties.$toast,
+    },
+  };
 });

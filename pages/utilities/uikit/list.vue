@@ -37,7 +37,7 @@ const sortOptions = ref([
 
 onMounted(() => {
   ProductService.getProductsSmall().then(
-    (data) => (dataviewValue.value = data),
+    (data) => (dataviewValue.value = data)
   );
 });
 

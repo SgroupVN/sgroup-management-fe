@@ -32,7 +32,7 @@ const onChangeTheme = (theme, mode) => {
   });
   linkElement.parentNode.insertBefore(
     cloneLinkElement,
-    linkElement.nextSibling,
+    linkElement.nextSibling
   );
 };
 
