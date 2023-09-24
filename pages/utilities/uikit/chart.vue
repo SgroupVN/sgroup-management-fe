@@ -25,7 +25,7 @@ const setColorOptions = () => {
   documentStyle.value = getComputedStyle(document.documentElement);
   textColor.value = documentStyle.value.getPropertyValue("--text-color");
   textColorSecondary.value = documentStyle.value.getPropertyValue(
-    "--text-color-secondary",
+    "--text-color-secondary"
   );
   surfaceBorder.value =
     documentStyle.value.getPropertyValue("--surface-border");

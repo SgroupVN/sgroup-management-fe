@@ -39,7 +39,7 @@ export const availableRules = {
     validator: (
       rule: any,
       value: string | number,
-      callback: (arg0: Error) => void,
+      callback: (arg0: Error) => void
     ) => {
       /**
        * Firstlt, it's must be a number
@@ -55,7 +55,7 @@ export const availableRules = {
     validator: (
       rule: any,
       value: string | number,
-      callback: (arg0: Error) => void,
+      callback: (arg0: Error) => void
     ) => {
       /**
        * Firstlt, it's must be a number
@@ -71,7 +71,7 @@ export const availableRules = {
     validator: (
       rule: any,
       value: string | any[],
-      callback: (arg0: Error) => void,
+      callback: (arg0: Error) => void
     ) => {
       if (value.length !== val.length) {
         callback(new Error("validate.length:" + val));
@@ -117,7 +117,7 @@ export const availableRules = {
     validator: (
       rule: any,
       value: string | number | any[],
-      callback: (arg0: Error) => void,
+      callback: (arg0: Error) => void
     ) => {
       if (isNaN(value) && value.length !== val) {
         callback(new Error("validate.digits:" + val));
@@ -128,7 +128,7 @@ export const availableRules = {
     validator: (
       rule: any,
       value: string | any[],
-      callback: (arg0: Error) => any,
+      callback: (arg0: Error) => any
     ) => {
       val.split(";").forEach((item: string) => {
         if (value.includes(item)) {

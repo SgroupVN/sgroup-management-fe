@@ -8,7 +8,7 @@ export function array2NaiveOptions(array: any[]) {
 }
 
 export function area2NaiveOptions(
-  array: Array<{ name: string; code: string }>,
+  array: Array<{ name: string; code: string }>
 ) {
   return array.map((item) => {
     return {
@@ -22,7 +22,7 @@ export function removeAreaPrefix(area: string | undefined) {
   if (!area?.length) return area;
   return area.replace(
     /(Tỉnh|Thành phố|Thành Phố|Huyện|Quận|Xã|Phường|Thị xã)/,
-    "",
+    ""
   );
 }
 

@@ -42,7 +42,7 @@ watch(
   (newVal) => {
     isActiveMenu.value =
       newVal === itemKey.value || newVal.startsWith(itemKey.value + "-");
-  },
+  }
 );
 
 const itemClick = (event, item) => {

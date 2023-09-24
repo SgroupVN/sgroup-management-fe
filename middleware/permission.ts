@@ -13,10 +13,10 @@ export default defineNuxtRouteMiddleware(
     };
     const permissions: AppPermission[] = metaData.permissions ?? [];
     const hasPermission = await permissions.every((permission) =>
-      auth.hasPermission(permission),
+      auth.hasPermission(permission)
     );
     if (!hasPermission) {
       return navigateTo("/forbidden");
     }
-  },
+  }
 );
