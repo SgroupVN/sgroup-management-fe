@@ -1,7 +1,7 @@
 <template>
   <Dialog
-    v-model:visible="dialogVisible"
-    :style="{ width: '450px' }"
+    v-model:visible="isVisible"
+    :style="{ width: '650px' }"
     header="Member Details"
     :modal="true"
     class="p-fluid"
@@ -14,16 +14,21 @@
         v-model.trim="member.name"
         required="true"
         autofocus
-        :class="{ 'p-invalid': submitted && !member.name }"
+        :class="{ 'p-invalid': isSubmitted && !member.name }"
       />
-      <small class="p-error" v-if="submitted && !member.name"
+      <small class="p-error" v-if="isSubmitted && !member.name"
         >Name is required.</small
       >
     </div>
     <div class="field">
       <label for="email">Email</label>
-      <InputText id="email" v-model.trim="member.email" required="true" />
-      <small class="p-error" v-if="submitted && !member.email"
+      <InputText
+        id="email"
+        v-model.trim="member.email"
+        required="true"
+        type="email"
+      />
+      <small class="p-error" v-if="isSubmitted && !member.email"
         >Email is required.</small
       >
     </div>
@@ -34,13 +39,16 @@
         v-model.trim="member.phoneNumber"
         required="true"
       />
-      <small class="p-error" v-if="submitted && !member.phoneNumber"
+      <small class="p-error" v-if="isSubmitted && !member.phoneNumber"
         >Phone Number is required.</small
       >
     </div>
     <div class="field">
       <label for="address">Address</label>
       <InputText id="address" v-model.trim="member.address" />
+      <small class="p-error" v-if="isSubmitted && !member.address"
+        >Address is required.</small
+      >
     </div>
     <div class="field">
       <label for="dateOfBirth">Date of Birth</label>
@@ -49,7 +57,11 @@
         v-model="member.dateOfBirth"
         :showIcon="true"
         :showButtonBar="true"
+        dateFormat="dd/mm/yy"
       ></Calendar>
+      <small class="p-error" v-if="isSubmitted && !member.dateOfBirth"
+        >Date of Birth is required.</small
+      >
     </div>
     <div class="field">
       <label for="debt">Debt</label>
@@ -66,11 +78,12 @@
       <Dropdown
         id="status"
         v-model="member.status"
-        :options="statuses"
-        optionLabel="label"
+        :options="MEMBER_STATUS"
+        optionLabel="value"
+        optionValue="key"
         placeholder="Select a Status"
+        @change="onStatusChanged"
       >
-        <!-- ... (template for Dropdown) -->
       </Dropdown>
     </div>
     <div class="field">
@@ -82,8 +95,9 @@
             <RadioButton
               :id="majorGroup.key"
               v-model="selectedMajorGroup"
-              name="option"
+              name="majorGroup"
               :value="majorGroup.key"
+              @change="onMajorGroupChange"
             />
             <label :for="majorGroup.key">{{ majorGroup.value }}</label>
           </div>
@@ -91,17 +105,22 @@
       </div>
       <Dropdown
         id="major"
-        v-model="selectedMajorGroup.major"
-        :options="selected"
-        optionLabel="label"
+        v-model="member.major"
+        :options="selectedMajorGroupItems"
+        optionLabel="value"
+        optionValue="key"
         placeholder="Select a Major"
       >
-        <!-- ... (template for Dropdown) -->
       </Dropdown>
     </div>
     <template #footer>
       <Button label="Cancel" icon="pi pi-times" text @click="cancel"></Button>
-      <Button label="Save" icon="pi pi-check" text @click="save"></Button>
+      <Button
+        label="Save"
+        icon="pi pi-check"
+        text
+        @click="onCreateMemberButtonClicked"
+      ></Button>
     </template>
   </Dialog>
 </template>
@@ -112,56 +131,93 @@ import { useToast } from "primevue/usetoast";
 import {
   MAJOR_GROUPS,
   PROGRAMMING_MAJORS,
-} from "@/types/constants/members/major.const";
-import { MajorType } from "@/types/enums/members/major.enum";
+  DESIGN_MAJORS,
+  MEMBER_STATUS,
+} from "@/types/constants/members";
+import { MembersService } from "@/service/members";
+import { MemberStatus, MajorType } from "@/types/enums/members";
 
+const toast = useToast();
 const props = defineProps({
   visible: Boolean, // Define a prop named 'visible' of type Boolean
 });
 const emits = defineEmits(["close", "saved"]); // Define a custom 'close' event
 
-const dialogVisible = ref(props.visible);
-const selectedMajorGroup = ref(MAJOR_GROUPS[0]);
-
+const selectedMajorGroup = ref(MAJOR_GROUPS[0].key);
+const selectedMajorGroupItems = ref(PROGRAMMING_MAJORS);
 const member = ref({
-  id: "", // Initialize with the member's ID
+  id: "",
   name: "",
   email: "",
   phoneNumber: "",
   address: "",
   dateOfBirth: null,
   debt: 0,
-  status: "",
-  major: "",
-  image: "", // You may initialize this with a default image URL
+  status: MemberStatus.Active,
+  major: PROGRAMMING_MAJORS[0].key,
+  image: "",
 });
-const submitted = ref(false);
+const isVisible = ref(props.visible);
+const isSubmitted = ref(false);
 
-const statuses = [
-  { label: "Active", value: "active" },
-  { label: "Inactive", value: "inactive" },
-];
+const onMajorGroupChange = () => {
+  switch (selectedMajorGroup.value) {
+    case MajorType.Programming:
+      selectedMajorGroupItems.value = PROGRAMMING_MAJORS;
+      break;
+    case MajorType.Design:
+      selectedMajorGroupItems.value = DESIGN_MAJORS;
+      break;
+    default:
+      selectedMajorGroupItems.value = PROGRAMMING_MAJORS;
+      break;
+  }
+};
 
-const majors = [
-  { label: "Computer Science", value: "cs" },
-  { label: "Mathematics", value: "math" },
-  { label: "Engineering", value: "eng" },
-];
+const onStatusChanged = (event) => {
+  member.value.status = event.value;
+};
 
-const createMember = () => {
-  member.value = {};
-  submitted.value = false;
-  dialogVisible.value = true;
+const checkIsDataValid = () => {
+  return (
+    member.value.name &&
+    member.value.email &&
+    member.value.phoneNumber &&
+    member.value.status &&
+    member.value.major
+  );
+};
+
+const onCreateMemberButtonClicked = async () => {
+  const isDataValid = checkIsDataValid();
+  isSubmitted.value = true;
+  if (!isDataValid) {
+    return;
+  }
+
+  // call api to create member
+  const newMember = await MembersService.createMember(member.value);
+  if (newMember) {
+    isSubmitted.value = false;
+    isVisible.value = true;
+    emits("saved");
+    toast.add({
+      severity: "success",
+      detail: "You have created new member",
+      life: 3000,
+    });
+  } else {
+    toast.add({
+      severity: "error",
+      detail: "Something went wrong, please try again",
+      life: 3000,
+    });
+  }
 };
 
 const cancel = () => {
   emits("close");
-  dialogVisible.value = false;
-  submitted.value = false;
-};
-
-const save = () => {
-  submitted.value = true;
-  emits("saved");
+  isVisible.value = false;
+  isSubmitted.value = false;
 };
 </script>

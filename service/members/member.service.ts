@@ -33,4 +33,12 @@ export const MembersService = {
       },
     ];
   },
+
+  createMember(member) {
+    // TODO: Call API to create member
+    return {
+      ...member,
+      id: 1,
+    };
+  },
 };

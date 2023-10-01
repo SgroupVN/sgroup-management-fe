@@ -273,12 +273,6 @@ const onCloseDetailMemberDialog = () => {
 };
 
 const onCreateMember = () => {
-  toast.add({
-    severity: "info",
-    summary: "Info",
-    detail: "Message Content",
-    life: 3000,
-  });
   isShowAddNewMemberDialog.value = false;
 };
 // #endregion

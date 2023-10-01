@@ -38,11 +38,9 @@ export const MAJOR_GROUPS = [
   {
     key: MajorType.Programming,
     value: "Programming",
-    majors: PROGRAMMING_MAJORS,
   },
   {
     key: MajorType.Design,
     value: "Design",
-    majors: DESIGN_MAJORS,
   },
 ];
