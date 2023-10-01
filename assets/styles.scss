@@ -61,3 +61,16 @@ input {
 }
 
 // #endregion
+
+// #region Customize Prime Vue
+.p-toast-message {
+  border: none !important;
+}
+
+.p-toast-message-icon {
+  display: none !important;
+}
+
+.p-button:focus {
+  box-shadow: none;
+}

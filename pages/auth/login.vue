@@ -130,7 +130,6 @@ const onLogin = async () => {
     email: email.value,
     password: password.value,
   });
-  console.log("success", isSuccess);
   if (!isSuccess) {
     haveLoginError.value = {
       error: true,

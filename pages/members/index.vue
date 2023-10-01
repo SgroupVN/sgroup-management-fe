@@ -108,29 +108,6 @@
       </Column>
     </DataTable>
   </div>
-  <Dialog
-    v-model:visible="isShowAddNewMemberDialog"
-    :style="{ width: '450px' }"
-    header="Member detail"
-    :modal="true"
-    class="p-fluid"
-  >
-    content
-    <template #footer>
-      <Button
-        label="Cancel"
-        icon="pi pi-times"
-        text
-        @click="onCloseDetailMemberDialog"
-      />
-      <Button
-        label="Save"
-        icon="pi pi-check"
-        text
-        @click="onSaveDetailMember"
-      />
-    </template>
-  </Dialog>
 
   <Dialog
     v-model:visible="isShowImportConfigDialog"
@@ -200,6 +177,13 @@
       <Button label="Import" icon="pi pi-check" text @click="onImportClicked" />
     </template>
   </Dialog>
+  <div v-if="isShowAddNewMemberDialog">
+    <AddMemberDialog
+      :visible="isShowAddNewMemberDialog"
+      @close="onCloseDetailMemberDialog"
+      @saved="onCreateMember"
+    ></AddMemberDialog>
+  </div>
 </template>
 
 <script setup>
@@ -217,6 +201,7 @@ import * as XLSX from "xlsx";
 import { MembersService } from "@/service/members/member.service";
 import { MEMBER_PROPERTIES } from "@/types/constants/members/member-properties.const";
 import permission from "@/middleware/permission";
+import AddMemberDialog from "@/components/modules/members/AddMemberDialog.vue";
 
 const toast = useToast();
 const members = ref(null);
@@ -233,7 +218,6 @@ onMounted(() => {
 
 const editMember = (data, index) => {
   //
-  console.log(data, index);
 };
 //  #region Import Excel
 const handleFileUpload = (event) => {
@@ -266,6 +250,7 @@ const processExcelData = (data) => {
       );
     }),
   }));
+
   updateMemberPropertiesSelection();
   const sheetName = workbook.SheetNames[0];
   const worksheet = workbook.Sheets[sheetName];
@@ -277,22 +262,17 @@ const processExcelData = (data) => {
 };
 // #endregion
 
-// #region  Add Member Dialog
+// #region Add Member Dialog
 const onOpenDetailMemberDialog = () => {
   isShowAddNewMemberDialog.value = true;
 };
+
 const onCloseDetailMemberDialog = () => {
   isShowAddNewMemberDialog.value = false;
   submitted.value = false;
 };
 
-const onSaveDetailMember = () => {
-  toast.add({
-    severity: "info",
-    summary: "Info",
-    detail: "Message Content",
-    life: 3000,
-  });
+const onCreateMember = () => {
   isShowAddNewMemberDialog.value = false;
 };
 // #endregion

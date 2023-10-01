@@ -198,7 +198,6 @@ export const useAuthStore = defineStore({
       this.user.role.permissions = this.user.role.permissions
         ? this.user.role.permissions.map((item) => item.name as AppPermission)
         : DEFAULT_PERMISSIONS;
-      console.log(this.user);
     },
 
     hasPermission(permission: AppPermission) {
