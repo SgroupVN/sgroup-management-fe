@@ -19,7 +19,7 @@
         icon="pi pi-plus"
         severity="secondary"
         class="mr-2"
-        @click="onOpenDetailMemberDialog"
+        @click="changeStateOfAddDialog"
       ></Button>
     </div>
 
@@ -33,13 +33,20 @@
       removableSort
     >
       <template #empty> No member found. </template>
-      <Column
-        field="name"
-        frozen
-        header="Name"
-        :sortable="true"
-        style="width: 35%; min-width: 200px"
-      ></Column>
+      <Column header="Members" style="min-width: 14rem">
+        <template #body="{ data }">
+          <div class="flex align-items-center gap-2">
+            <!-- <Avatar :alt="data.firstName + ' ' + data.lastName" :src="data.avatar" style="width: 32px" /> -->
+            <Avatar
+              image="https://www.gravatar.com/avatar/05dfd4b41340d09cae045235eb0893c3?d=mp"
+              class="flex align-items-center justify-content-center mr-2"
+              shape="circle"
+              size="large"
+            />
+            <span>{{ data.firstName + " " + data.lastName }}</span>
+          </div>
+        </template>
+      </Column>
       <Column
         field="email"
         header="Email"
@@ -49,7 +56,7 @@
           {{ data.email || "-" }}
         </template></Column
       >
-      <Column
+      <!-- <Column
         field="dateOfBirth"
         header="Date of Birth"
         :sortable="true"
@@ -57,7 +64,7 @@
         ><template #body="{ data }">
           {{ data.dateOfBirth || "-" }}
         </template></Column
-      >
+      > -->
       <Column
         field="phone"
         header="Phone"
@@ -67,7 +74,7 @@
           {{ data.phone || "-" }}
         </template></Column
       >
-      <Column
+      <!-- <Column
         field="status"
         header="Status"
         :sortable="true"
@@ -75,8 +82,8 @@
         ><template #body="{ data }">
           {{ data.status || "-" }}
         </template></Column
-      >
-      <Column
+      > -->
+      <!-- <Column
         field="lateCount"
         header="Late Count"
         :sortable="true"
@@ -85,7 +92,7 @@
         <template #body="{ data }">
           {{ data.lateCount || "-" }}
         </template></Column
-      >
+      > -->
       <Column
         field="major"
         header="Major"
@@ -177,12 +184,13 @@
       <Button label="Import" icon="pi pi-check" text @click="onImportClicked" />
     </template>
   </Dialog>
-  <div v-if="isShowAddNewMemberDialog">
-    <AddMemberDialog
-      :visible="isShowAddNewMemberDialog"
-      @close="onCloseDetailMemberDialog"
+  <div v-if="isShowMemberDetailsDialog">
+    <MemberDialog
+      :visible="isShowMemberDetailsDialog"
+      :member-data="editedMember"
+      @close="changeStateOfAddDialog"
       @saved="onCreateMember"
-    ></AddMemberDialog>
+    ></MemberDialog>
   </div>
 </template>
 
@@ -201,7 +209,7 @@ import * as XLSX from "xlsx";
 import { MembersService } from "@/service/members/member.service";
 import { MEMBER_PROPERTIES } from "@/types/constants/members/member-properties.const";
 import permission from "@/middleware/permission";
-import AddMemberDialog from "@/components/modules/members/AddMemberDialog.vue";
+import MemberDialog from "@/components/modules/members/MemberDialog.vue";
 
 const toast = useToast();
 const members = ref(null);
@@ -209,15 +217,17 @@ const importedColumns = ref([]);
 const importedData = ref([]);
 const memberProperties = ref(MEMBER_PROPERTIES);
 
-const isShowAddNewMemberDialog = ref(false);
+const isShowMemberDetailsDialog = ref(false);
 const isShowImportConfigDialog = ref(false);
+let editedMember = ref(false);
 
 onMounted(() => {
-  members.value = MembersService.getAllMembers();
+  MembersService.getAllMembers().then((data) => (members.value = data));
 });
 
 const editMember = (data, index) => {
-  //
+  editedMember = data;
+  changeStateOfAddDialog();
 };
 //  #region Import Excel
 const handleFileUpload = (event) => {
@@ -263,17 +273,8 @@ const processExcelData = (data) => {
 // #endregion
 
 // #region Add Member Dialog
-const onOpenDetailMemberDialog = () => {
-  isShowAddNewMemberDialog.value = true;
-};
-
-const onCloseDetailMemberDialog = () => {
-  isShowAddNewMemberDialog.value = false;
-  submitted.value = false;
-};
-
-const onCreateMember = () => {
-  isShowAddNewMemberDialog.value = false;
+const changeStateOfAddDialog = () => {
+  isShowMemberDetailsDialog.value = !isShowMemberDetailsDialog.value;
 };
 // #endregion
 
@@ -286,7 +287,7 @@ const onCloseImportConfigDialog = () => {
   isShowImportConfigDialog.value = false;
 };
 
-const onImportClicked = () => {
+const onImportClicked = async () => {
   toast.add({
     severity: "info",
     summary: "Info",
@@ -294,7 +295,11 @@ const onImportClicked = () => {
     life: 3000,
   });
   // TODO: update to integrate API with BE
-  members.value = [...members.value, ...createMembersByImportedData()];
+  // members.value = [...members.value, ...createMembersByImportedData()];
+  const response = await MembersService.createNewMembers(
+    ...createMembersByImportedData()
+  );
+  console.log("response when upload file", response);
   //
   isShowImportConfigDialog.value = false;
 };

@@ -1,24 +1,39 @@
 <template>
   <Dialog
     v-model:visible="isVisible"
-    :style="{ width: '650px' }"
-    header="Member Details"
+    :style="{ width: '550px' }"
+    :header="props.memberData ? 'Member Details' : 'Add Member'"
     :modal="true"
     class="p-fluid"
     @hide="cancel"
   >
-    <div class="field">
-      <label for="name">Name</label>
-      <InputText
-        id="name"
-        v-model.trim="member.name"
-        required="true"
-        autofocus
-        :class="{ 'p-invalid': isSubmitted && !member.name }"
-      />
-      <small class="p-error" v-if="isSubmitted && !member.name"
-        >Name is required.</small
-      >
+    <div class="field flex justify-content-between">
+      <div>
+        <label for="name">First Name</label>
+        <InputText
+          id="name"
+          v-model.trim="member.firstName"
+          required="true"
+          autofocus
+          :class="{ 'p-invalid': isSubmitted && !member.firstName }"
+        />
+        <small class="p-error" v-if="isSubmitted && !member.firstName"
+          >Name is required.</small
+        >
+      </div>
+      <div>
+        <label for="name">Last Name</label>
+        <InputText
+          id="name"
+          v-model.trim="member.lastName"
+          required="true"
+          autofocus
+          :class="{ 'p-invalid': isSubmitted && !member.lastName }"
+        />
+        <small class="p-error" v-if="isSubmitted && !member.lastName"
+          >Name is required.</small
+        >
+      </div>
     </div>
     <div class="field">
       <label for="email">Email</label>
@@ -33,37 +48,33 @@
       >
     </div>
     <div class="field">
-      <label for="phoneNumber">Phone Number</label>
-      <InputText
-        id="phoneNumber"
-        v-model.trim="member.phoneNumber"
-        required="true"
-      />
-      <small class="p-error" v-if="isSubmitted && !member.phoneNumber"
+      <label for="phone">Phone Number</label>
+      <InputText id="phone" v-model.trim="member.phone" required="true" />
+      <small class="p-error" v-if="isSubmitted && !member.phone"
         >Phone Number is required.</small
       >
     </div>
-    <div class="field">
+    <!-- <div class="field">
       <label for="address">Address</label>
       <InputText id="address" v-model.trim="member.address" />
       <small class="p-error" v-if="isSubmitted && !member.address"
         >Address is required.</small
       >
-    </div>
+    </div> -->
     <div class="field">
-      <label for="dateOfBirth">Date of Birth</label>
+      <label for="birthDate">Date of Birth</label>
       <Calendar
-        id="dateOfBirth"
-        v-model="member.dateOfBirth"
+        id="birthDate"
+        v-model="member.birthDate"
         :showIcon="true"
         :showButtonBar="true"
         dateFormat="dd/mm/yy"
       ></Calendar>
-      <small class="p-error" v-if="isSubmitted && !member.dateOfBirth"
+      <small class="p-error" v-if="isSubmitted && !member.birthDate"
         >Date of Birth is required.</small
       >
     </div>
-    <div class="field">
+    <!-- <div class="field">
       <label for="debt">Debt</label>
       <InputNumber
         id="debt"
@@ -112,14 +123,14 @@
         placeholder="Select a Major"
       >
       </Dropdown>
-    </div>
+    </div> -->
     <template #footer>
       <Button label="Cancel" icon="pi pi-times" text @click="cancel"></Button>
       <Button
         label="Save"
         icon="pi pi-check"
         text
-        @click="onCreateMemberButtonClicked"
+        @click="onSaveButtonClicked()"
       ></Button>
     </template>
   </Dialog>
@@ -140,23 +151,27 @@ import { MemberStatus, MajorType } from "@/types/enums/members";
 const toast = useToast();
 const props = defineProps({
   visible: Boolean, // Define a prop named 'visible' of type Boolean
+  memberData: Object,
 });
 const emits = defineEmits(["close", "saved"]); // Define a custom 'close' event
 
 const selectedMajorGroup = ref(MAJOR_GROUPS[0].key);
 const selectedMajorGroupItems = ref(PROGRAMMING_MAJORS);
-const member = ref({
-  id: "",
-  name: "",
-  email: "",
-  phoneNumber: "",
-  address: "",
-  dateOfBirth: null,
-  debt: 0,
-  status: MemberStatus.Active,
-  major: PROGRAMMING_MAJORS[0].key,
-  image: "",
-});
+const member = ref(
+  props.memberData || {
+    id: "",
+    firstName: "",
+    lastName: "",
+    email: "",
+    phone: "",
+    // address: "",
+    birthDate: null,
+    // debt: 0,
+    // status: MemberStatus.Active,
+    // major: PROGRAMMING_MAJORS[0].key,
+    // avatar: "",
+  }
+);
 const isVisible = ref(props.visible);
 const isSubmitted = ref(false);
 
@@ -174,36 +189,56 @@ const onMajorGroupChange = () => {
   }
 };
 
+onMounted(() => {
+  console.log("onMounted the dialog");
+});
+
 const onStatusChanged = (event) => {
   member.value.status = event.value;
 };
 
 const checkIsDataValid = () => {
   return (
-    member.value.name &&
+    member.value.firstName &&
+    member.value.lastName &&
     member.value.email &&
-    member.value.phoneNumber &&
-    member.value.status &&
-    member.value.major
+    member.value.phone &&
+    member.value.birthDate
   );
 };
 
-const onCreateMemberButtonClicked = async () => {
+const onSaveButtonClicked = async () => {
   const isDataValid = checkIsDataValid();
+  const isUpdated = props.memberData ? true : false;
+  const response = undefined;
   isSubmitted.value = true;
   if (!isDataValid) {
     return;
   }
 
-  // call api to create member
-  const newMember = await MembersService.createMember(member.value);
-  if (newMember) {
+  if (isUpdated) {
+    response = await MembersService.updateMemberInformation(member.value);
+  } else {
+    response = await MembersService.createNewMembers([
+      {
+        firstName: member.value.firstName,
+        lastName: member.value.lastName,
+        email: member.value.email,
+        phone: member.value.phone,
+        birthDate: member.value.birthDate,
+      },
+    ]);
+  }
+
+  if (response.success) {
     isSubmitted.value = false;
-    isVisible.value = true;
+    isVisible.value = false;
     emits("saved");
     toast.add({
       severity: "success",
-      detail: "You have created new member",
+      detail: isUpdated
+        ? `You have updated members ${member.value.firstName}`
+        : `You have created new member ${member.value.firstName}`,
       life: 3000,
     });
   } else {
