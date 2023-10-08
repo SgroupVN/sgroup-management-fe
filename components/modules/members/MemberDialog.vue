@@ -210,7 +210,7 @@ const checkIsDataValid = () => {
 const onSaveButtonClicked = async () => {
   const isDataValid = checkIsDataValid();
   const isUpdated = props.memberData ? true : false;
-  const response = undefined;
+  let response = undefined;
   isSubmitted.value = true;
   if (!isDataValid) {
     return;

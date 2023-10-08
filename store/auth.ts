@@ -64,9 +64,7 @@ export const useAuthStore = defineStore({
       const LOGIN_API_URL = "/auth/login";
       try {
         const requestLoginToServer: LoginResponse =
-          await useApiPost<LoginResponse>(LOGIN_API_URL, {
-            body: formData,
-          });
+          await useApiPost<LoginResponse>(LOGIN_API_URL, formData);
         const responseData = requestLoginToServer.data;
 
         useCookie(TokenTitleToStorage.REFRESH_TOKEN, {
@@ -101,12 +99,7 @@ export const useAuthStore = defineStore({
 
         const data = await useApiPost<{
           accessToken: string;
-        }>("/auth/refresh", {
-          method: "POST",
-          body: {
-            refreshToken,
-          },
-        });
+        }>("/auth/refresh", refreshToken);
 
         this.accessToken = data.accessToken;
         const payload = jwtDecode<AuthUser>(data.accessToken);
@@ -124,9 +117,10 @@ export const useAuthStore = defineStore({
     },
 
     async register(formData: RegisterRequestDto) {
-      const data = await useApiPost<RegisterResponse>("/auth/register", {
-        body: formData,
-      });
+      const data = await useApiPost<RegisterResponse>(
+        "/auth/register",
+        formData
+      );
 
       this.accessToken = data.accessToken;
       const payload = jwtDecode<AuthUser>(data.accessToken);
@@ -135,15 +129,11 @@ export const useAuthStore = defineStore({
     },
 
     async sendRequestResetPassword(dto: { email: string }) {
-      await useApiPost("/auth/request-reset-password", {
-        body: dto,
-      });
+      await useApiPost("/auth/request-reset-password", dto);
     },
 
     async resetPassword(dto: { token: string; password: string }) {
-      await useApiPost("/auth/reset-password", {
-        body: dto,
-      });
+      await useApiPost("/auth/reset-password", dto);
     },
 
     async authMe(access_token: string) {

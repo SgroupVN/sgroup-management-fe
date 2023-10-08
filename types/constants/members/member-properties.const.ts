@@ -35,4 +35,8 @@ export const MEMBER_PROPERTIES = [
     key: "major",
     value: "Major",
   },
+  {
+    key: "lateCount",
+    value: "Late Count",
+  },
 ];

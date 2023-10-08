@@ -23,12 +23,24 @@ export const MembersService = {
     console.log("services post new", userInfo);
     if (!userInfo) return;
 
-    const data = await useApiPost<MemberInformation>(this.UserAPIEndPoint, {
-      method: "POST",
-      body: userInfo,
-    });
+    const data = await useApiPost<MemberInformation>(
+      this.UserAPIEndPoint,
+      userInfo
+    );
 
     console.log("Have created new members", data);
+    return data;
+  },
+
+  async createMembersByImportedData(importedData: any[], mappedField: any) {
+    const formData = new FormData();
+    formData.append("importedData", JSON.stringify(importedData));
+    formData.append("mappedField", JSON.stringify(mappedField));
+
+    const data = await useApiPost<MemberInformation>(
+      this.UserAPIEndPoint + `/import`,
+      formData
+    );
   },
 
   async updateMemberInformation(userInfo: MemberInformation) {
@@ -42,5 +54,7 @@ export const MembersService = {
       }
     );
     console.log("Have updated", data);
+
+    return data;
   },
 };

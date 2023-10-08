@@ -189,7 +189,7 @@
       :visible="isShowMemberDetailsDialog"
       :member-data="editedMember"
       @close="changeStateOfAddDialog"
-      @saved="onCreateMember"
+      @saved="onMemberCreated"
     ></MemberDialog>
   </div>
 </template>
@@ -229,6 +229,11 @@ const editMember = (data, index) => {
   editedMember = data;
   changeStateOfAddDialog();
 };
+
+const onMemberCreated = () => {
+  //
+};
+
 //  #region Import Excel
 const handleFileUpload = (event) => {
   const file = event.target.files[0];
@@ -291,15 +296,24 @@ const onImportClicked = async () => {
   toast.add({
     severity: "info",
     summary: "Info",
-    detail: "Message Content",
+    detail: "Importing data...",
     life: 3000,
   });
   // TODO: update to integrate API with BE
   // members.value = [...members.value, ...createMembersByImportedData()];
-  const response = await MembersService.createNewMembers(
-    ...createMembersByImportedData()
+  const mappedFields = {};
+  importedColumns.value.forEach((importedColumn) => {
+    if (importedColumn.mapTo) {
+      mappedFields[importedColumn.key] = importedColumn.mapTo.key;
+    }
+  });
+
+  console.log(mappedFields);
+  const response = await MembersService.createMembersByImportedData(
+    importedData.value,
+    mappedFields
   );
-  console.log("response when upload file", response);
+  // console.log("response when upload file", response);
   //
   isShowImportConfigDialog.value = false;
 };
@@ -315,17 +329,5 @@ const updateMemberPropertiesSelection = () => {
   memberProperties.value = MEMBER_PROPERTIES.filter(
     (memberProperty) => !mappedColumns.includes(memberProperty.key)
   );
-};
-
-const createMembersByImportedData = () => {
-  const members = importedData.value.map((data) => {
-    const member = {};
-    importedColumns.value.forEach((importedColumn) => {
-      member[importedColumn.mapTo?.key] = data[importedColumn.key];
-    });
-    return member;
-  });
-
-  return members;
 };
 </script>
