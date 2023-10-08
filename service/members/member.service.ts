@@ -17,8 +17,7 @@ export const MembersService = {
     const data = await useApiGet<GetMembersResponseModel>(
       this.UserAPIEndPoint + queryString
     );
-    console.log(data.data);
-    return data.data;
+    return data;
   },
 
   async createNewMembers(userInfo: MemberInformation[]) {

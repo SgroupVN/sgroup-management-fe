@@ -42,12 +42,14 @@
       </div>
     </div>
 
-    <div class="flex-1" style="height: calc(100% - 84px)">
+    <div class="flex-1 flex flex-col" style="height: calc(100% - 84px)">
       <DataTable
+        :style="{
+          height: 'calc(100% - 60px)',
+        }"
         :value="members"
-        class="h-full"
         :rows="10"
-        :paginator="true"
+        :paginator="false"
         :loading="isLoading"
         responsiveLayout="scroll"
         :resizableColumns="true"
@@ -55,7 +57,11 @@
         removableSort
         :contentStyle="{ height: 'calc(100% - 60px)' }"
       >
-        <template #empty> No member found. </template>
+        <template #empty>
+          <div class="h-full flex justify-center items-center">
+            No member found.
+          </div></template
+        >
         <Column header="Members" style="min-width: 14rem" frozen>
           <template #body="{ data }">
             <div class="flex align-items-center gap-2">
@@ -146,6 +152,11 @@
           </template>
         </Column>
       </DataTable>
+      <Paginator
+        :rows="filterParams.take"
+        :totalRecords="totalRecords"
+        @page="onPageChanged"
+      ></Paginator>
     </div>
   </div>
 
@@ -258,8 +269,9 @@ const importedData = ref([]);
 const memberProperties = ref(MEMBER_PROPERTIES);
 const filterParams = ref({
   page: 1,
-  take: 100,
+  take: 10,
 });
+const totalRecords = ref(0);
 
 const isShowMemberDetailsDialog = ref(false);
 const isShowImportConfigDialog = ref(false);
@@ -273,10 +285,17 @@ onMounted(() => {
 const getMembers = () => {
   isLoading.value = true;
 
-  MembersService.getAllMembers(filterParams.value).then((data) => {
-    members.value = data;
+  MembersService.getAllMembers(filterParams.value).then((res) => {
+    console.log(res);
+    members.value = res.data;
+    totalRecords.value = res.meta?.itemCount ?? 0;
     isLoading.value = false;
   });
+};
+
+const onPageChanged = (event) => {
+  filterParams.value.page = event.page + 1;
+  getMembers();
 };
 
 const editMember = (data, index) => {
@@ -371,29 +390,39 @@ const onCloseImportConfigDialog = () => {
 };
 
 const onImportClicked = async () => {
-  toast.add({
-    severity: "info",
-    summary: "Info",
-    detail: "Importing data...",
-    life: 3000,
-  });
-  // TODO: update to integrate API with BE
-  // members.value = [...members.value, ...createMembersByImportedData()];
+  // check if all columns are mapped
+  const unmappedColumns = importedColumns.value.filter(
+    (importedColumn) => !importedColumn.mapTo
+  );
+  if (unmappedColumns.length > 0) {
+    toast.add({
+      severity: "error",
+      detail: "Please select mapped fields for all imported columns",
+      life: 3000,
+    });
+    return;
+  }
+
   const mappedFields = {};
   importedColumns.value.forEach((importedColumn) => {
     if (importedColumn.mapTo) {
       mappedFields[importedColumn.key] = importedColumn.mapTo.key;
     }
   });
-
-  console.log(mappedFields);
   const response = await MembersService.createMembersByImportedData(
     importedData.value,
     mappedFields
   );
-  // console.log("response when upload file", response);
-  //
-  isShowImportConfigDialog.value = false;
+  if (response.success) {
+    toast.add({
+      severity: "success",
+      detail: "You have successfully imported members from excel file",
+      life: 3000,
+    });
+    onCloseImportConfigDialog();
+    getMembers();
+    isShowImportConfigDialog.value = false;
+  }
 };
 
 const onMapFieldChanged = (event) => {
@@ -430,8 +459,7 @@ const deleteMember = async (memberId) => {
     members.value = members.value.filter((x) => x.id !== memberId);
     toast.add({
       severity: "success",
-      summary: "Success",
-      detail: "Member deleted",
+      detail: "You have successfully deleted a member",
       life: 3000,
     });
   }
