@@ -37,7 +37,7 @@ export const MembersService = {
       this.UserAPIEndPoint + `/import`,
       {
         importedData: importedData,
-        mappedField: mappedField,
+        mappedFields: mappedField,
       }
     );
 
@@ -55,6 +55,16 @@ export const MembersService = {
       }
     );
     console.log("Have updated", data);
+
+    return data;
+  },
+
+  async deleteMember(memberId: string) {
+    if (!memberId) return;
+
+    const data = await useApiDelete<boolean>(
+      this.UserAPIEndPoint + `/${memberId}`
+    );
 
     return data;
   },

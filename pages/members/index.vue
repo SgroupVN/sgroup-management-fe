@@ -1,8 +1,17 @@
 <template>
   <div class="card h-full">
     <h3>Members</h3>
-    <h5>Download Add template CSV <a @click="downloadFile($event)">HERE</a></h5>
     <div class="flex justify-end my-2 gap-2">
+      <Button
+        class="cursor-pointer"
+        @click="downloadImportMemberTemplate($event)"
+        outlined
+      >
+        <label for="dropzone-file">
+          <i class="pi pi-download mr-2"></i>
+          Download Template
+        </label>
+      </Button>
       <Button class="cursor-pointer">
         <label for="dropzone-file">
           <i class="pi pi-upload mr-2"></i>
@@ -34,7 +43,7 @@
       removableSort
     >
       <template #empty> No member found. </template>
-      <Column header="Members" style="min-width: 14rem">
+      <Column header="Members" style="min-width: 14rem" frozen>
         <template #body="{ data }">
           <div class="flex align-items-center gap-2">
             <!-- <Avatar :alt="data.firstName + ' ' + data.lastName" :src="data.avatar" style="width: 32px" /> -->
@@ -103,14 +112,21 @@
           {{ data.major || "-" }}
         </template></Column
       >
-      <Column style="flex: 0 0 4rem" frozen>
+      <Column frozen>
         <template #body="{ data, index }">
           <Button
             type="button"
             :icon="'pi pi-pencil'"
             text
-            size="small"
             @click="editMember(data, index)"
+          ></Button>
+
+          <Button
+            type="button"
+            :icon="'pi pi-trash'"
+            class="text-red-500"
+            text
+            @click="onDeleteButtonClicked(data, index)"
           ></Button>
         </template>
       </Column>
@@ -206,7 +222,7 @@ definePageMeta({
     permissions: [AppPermission.CanManageUser, AppPermission.CanManageUser],
   },
 });
-
+import { useConfirm } from "primevue/useconfirm";
 import { AppPermission } from "@/types/enums/permission.enum";
 import { onMounted, ref } from "vue";
 import { useToast } from "primevue/usetoast";
@@ -217,6 +233,8 @@ import permission from "@/middleware/permission";
 import MemberDialog from "@/components/modules/members/MemberDialog.vue";
 
 const toast = useToast();
+const confirm = useConfirm();
+
 const members = ref(null);
 const importedColumns = ref([]);
 const importedData = ref([]);
@@ -231,14 +249,13 @@ onMounted(() => {
 });
 
 const editMember = (data, index) => {
-  editedMember = data;
   toggleMemberDialog();
 };
 
-const downloadFile = (event) => {
+const downloadImportMemberTemplate = (event) => {
   event.preventDefault();
-  const csv = ["Members", "Email", "Phone", "Date of Birth", "Major", "Debt"];
-  const csvString = csv.join(",");
+  const headers = MEMBER_PROPERTIES.map((x) => x.value);
+  const csvString = headers.join(",");
   const blob = new Blob([csvString], { type: "text/csv" });
   const link = document.createElement("a");
   link.href = URL.createObjectURL(blob);
@@ -251,7 +268,7 @@ const onMemberCreated = () => {
 };
 
 const onCloseMemberDialog = () => {
-  editedMember.value = null;
+  editedMember = null;
   toggleMemberDialog();
 };
 
@@ -359,5 +376,33 @@ const updateMemberPropertiesSelection = () => {
   memberProperties.value = MEMBER_PROPERTIES.filter(
     (memberProperty) => !mappedColumns.includes(memberProperty.key)
   );
+};
+
+// #endregion
+
+// #region Delete Member
+const onDeleteButtonClicked = (data, index) => {
+  confirm.require({
+    message: "Are you sure you want to delete this member?",
+    header: "Delete Confirmation",
+    icon: "pi pi-info-circle",
+    acceptClass: "p-button-danger",
+    accept: () => {
+      deleteMember(data.id);
+    },
+  });
+};
+
+const deleteMember = async (memberId) => {
+  const res = await MembersService.deleteMember(memberId);
+  if (res) {
+    members.value = members.value.filter((x) => x.id !== memberId);
+    toast.add({
+      severity: "success",
+      summary: "Success",
+      detail: "Member deleted",
+      life: 3000,
+    });
+  }
 };
 </script>

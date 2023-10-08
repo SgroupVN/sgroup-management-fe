@@ -6,6 +6,7 @@ import AppSidebar from "./AppSidebar.vue";
 
 <template>
   <Toast position="bottom-center" />
+  <ConfirmDialog position="bottom-center"></ConfirmDialog>
   <div class="h-screen w-screen overflow-hidden">
     <app-topbar></app-topbar>
     <div class="layout-sidebar bg-white rounded-md p-4 top-20 m-4">
