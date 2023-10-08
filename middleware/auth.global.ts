@@ -8,9 +8,9 @@ export default defineNuxtRouteMiddleware(async (to, from) => {
     !to.fullPath.startsWith("/auth") &&
     !from.fullPath.startsWith("/auth")
   ) {
-    await navigateTo("/auth/login");
+    return navigateTo("/auth/login");
   }
   if (isAuth && to.fullPath.startsWith("/auth")) {
-    await navigateTo("/");
+    return navigateTo("/");
   }
 });

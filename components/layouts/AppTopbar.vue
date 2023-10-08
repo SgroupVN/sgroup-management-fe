@@ -45,13 +45,20 @@ const fullName = computed(() => {
 
 <template>
   <div
-    class="layout-topbar fixed h-20 left-0 top-0 w-full px-4 py-2 flex items-center justify-between shadow-md bg-white">
+    class="layout-topbar fixed h-20 left-0 top-0 w-full px-4 py-2 flex items-center justify-between shadow-md bg-white"
+  >
     <router-link to="/" class="flex items-center">
       <img src="../../public/logo/logo-sgroup-black.png" class="h-14" />
     </router-link>
 
     <div class="flex gap-2 items-center">
-      <Button type="button" label="Profile" @click="toggle" aria-haspopup="true" aria-controls="overlay_menu">
+      <Button
+        type="button"
+        label="Profile"
+        @click="toggle"
+        aria-haspopup="true"
+        aria-controls="overlay_menu"
+      >
         <i class="pi pi-user mr-2"></i> {{ fullName }}
       </Button>
       <Menu ref="menu" id="overlay_menu" :model="items" :popup="true" />

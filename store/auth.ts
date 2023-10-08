@@ -167,7 +167,7 @@ export const useAuthStore = defineStore({
         this.accessToken = access_token;
       }
     },
-    
+
     async logout() {
       // currently logged out having same issues
       this.user = null;

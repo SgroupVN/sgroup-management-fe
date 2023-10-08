@@ -1,6 +1,11 @@
 <template>
   <ul class="layout-menu">
-    <app-menu-item v-for="(item, i) in filteredItems" :key="i" :item="item" :index="i" />
+    <app-menu-item
+      v-for="(item, i) in filteredItems"
+      :key="i"
+      :item="item"
+      :index="i"
+    />
   </ul>
 </template>
 
