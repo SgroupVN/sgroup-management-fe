@@ -1,7 +1,10 @@
 <template>
   <div class="card h-full">
     <h3>Members</h3>
-    <h5>Download Add template CSV <a @click="downloadFile($event)">HERE</a></h5>
+    <h5>
+      Download Add template CSV
+      <a @click="downloadAddNewMembersTemplate($event)">HERE</a>
+    </h5>
     <div class="flex justify-end my-2 gap-2">
       <Button class="cursor-pointer">
         <label for="dropzone-file">
@@ -224,18 +227,18 @@ const memberProperties = ref(MEMBER_PROPERTIES);
 
 const isShowMemberDetailsDialog = ref(false);
 const isShowImportConfigDialog = ref(false);
-let editedMember = ref(null);
+const editedMember = ref(null);
 
 onMounted(() => {
   MembersService.getAllMembers().then((data) => (members.value = data));
 });
 
 const editMember = (data, index) => {
-  editedMember = data;
+  editedMember.value = data;
   toggleMemberDialog();
 };
 
-const downloadFile = (event) => {
+const downloadAddNewMembersTemplate = (event) => {
   event.preventDefault();
   const csv = ["Members", "Email", "Phone", "Date of Birth", "Major", "Debt"];
   const csvString = csv.join(",");

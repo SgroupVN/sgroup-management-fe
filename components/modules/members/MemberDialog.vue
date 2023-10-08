@@ -157,23 +157,25 @@ const emits = defineEmits(["close", "saved"]); // Define a custom 'close' event
 
 const selectedMajorGroup = ref(MAJOR_GROUPS[0].key);
 const selectedMajorGroupItems = ref(PROGRAMMING_MAJORS);
-const member = ref(
-  props.memberData || {
-    id: "",
-    firstName: "",
-    lastName: "",
-    email: "",
-    phone: "",
-    address: "",
-    birthDate: null,
-    debt: 0,
-    status: MemberStatus.Active,
-    major: PROGRAMMING_MAJORS[0].key,
-    avatar: "",
-  }
-);
+const member = ref({
+  id: "",
+  firstName: "",
+  lastName: "",
+  email: "",
+  phone: "",
+  address: "",
+  birthDate: null,
+  debt: 0,
+  status: MemberStatus.Active,
+  major: PROGRAMMING_MAJORS[0].key,
+  avatar: "",
+});
 const isVisible = ref(props.visible);
 const isSubmitted = ref(false);
+
+onMounted(() => {
+  member.value = { ...props.memberData };
+});
 
 const onMajorGroupChange = () => {
   switch (selectedMajorGroup.value) {
