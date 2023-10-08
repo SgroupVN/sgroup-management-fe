@@ -41,6 +41,8 @@ export const MembersService = {
       this.UserAPIEndPoint + `/import`,
       formData
     );
+
+    return data;
   },
 
   async updateMemberInformation(userInfo: MemberInformation) {
