@@ -33,13 +33,12 @@ export const MembersService = {
   },
 
   async createMembersByImportedData(importedData: any[], mappedField: any) {
-    const formData = new FormData();
-    formData.append("importedData", JSON.stringify(importedData));
-    formData.append("mappedField", JSON.stringify(mappedField));
-
     const data = await useApiPost<MemberInformation>(
       this.UserAPIEndPoint + `/import`,
-      formData
+      {
+        importedData: importedData,
+        mappedField: mappedField,
+      }
     );
 
     return data;

@@ -143,7 +143,7 @@
       <Column frozen header="Preview data" class="min-w-[200px]">
         <template #body="{ data }">
           <div class="flex-1">
-            {{ importedData[0][data.value] }}
+            {{ importedData?.length > 0 ? importedData[0][data.value] : "-" }}
           </div>
         </template>
       </Column>
@@ -156,13 +156,17 @@
             optionDisabled="disabled"
             placeholder="Select a Column"
             class="w-full flex-1"
+            :class="data.mapTo ? '' : 'border-red-200'"
             @change="onMapFieldChanged"
           >
             <template #value="slotProps">
-              <div v-if="slotProps.value" class="flex align-items-center">
+              <div
+                v-if="slotProps.value"
+                class="flex align-items-center text-black"
+              >
                 <div>{{ slotProps.value["value"] }}</div>
               </div>
-              <span v-else>
+              <span v-else class="italic text-red-700">
                 {{ slotProps.placeholder }}
               </span>
             </template>
@@ -272,6 +276,7 @@ const processExcelData = (data) => {
     workbook.Sheets[workbook.SheetNames[0]],
     { header: 1 }
   )[0];
+
   importedColumns.value = headerNames.map((name) => ({
     key: name,
     value: name,
@@ -283,10 +288,18 @@ const processExcelData = (data) => {
     }),
   }));
 
-  updateMemberPropertiesSelection();
   const sheetName = workbook.SheetNames[0];
   const worksheet = workbook.Sheets[sheetName];
   const excelData = XLSX.utils.sheet_to_json(worksheet);
+  if (!excelData || excelData.length === 0) {
+    toast.add({
+      severity: "error",
+      summary: "Error",
+      detail: "No data found in file, please check again or try another file",
+      life: 3000,
+    });
+    return;
+  }
   importedData.value = excelData;
 
   updateMemberPropertiesSelection();

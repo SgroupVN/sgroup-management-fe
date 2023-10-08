@@ -17,7 +17,7 @@ import { SIDEBAR_ITEMS } from "@/types/constants/base/sidebar.const";
 const auth = useAuthStore();
 
 const filteredItems = computed(() => {
-  return filterMenuItems([...SIDEBAR_ITEMS]);
+  return filterMenuItems(Array.from(SIDEBAR_ITEMS));
 });
 
 const filterMenuItems = (menuItems) => {
