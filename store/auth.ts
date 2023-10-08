@@ -79,7 +79,7 @@ export const useAuthStore = defineStore({
         );
 
         this.accessToken = responseData.token.accessToken;
-        this.loadUserData();
+        await this.loadUserData();
 
         return true;
       } catch (error) {
@@ -167,7 +167,7 @@ export const useAuthStore = defineStore({
         this.accessToken = access_token;
       }
     },
-
+    
     async logout() {
       // currently logged out having same issues
       this.user = null;
@@ -178,6 +178,7 @@ export const useAuthStore = defineStore({
       }).value = null;
 
       await useLocalStorage(TokenTitleToStorage.ACCESS_TOKEN, null);
+      useLocalStorage(TokenTitleToStorage.ACCESS_TOKEN, null).value = null;
 
       await navigateTo("/auth/login");
     },

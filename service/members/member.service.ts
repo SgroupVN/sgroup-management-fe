@@ -3,7 +3,7 @@ import {
   MembersResponseModel,
   GetMembersResponseModel,
 } from "@/types/models/members";
-import useApiPatch from "D:/S-management/sgroup-management-fe/composables/userApiPatch";
+import useApiPatch from "@/composables/userApiPatch";
 
 export const MembersService = {
   UserAPIEndPoint: "/users",
