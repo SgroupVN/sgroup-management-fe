@@ -8,12 +8,14 @@ import useApiPatch from "@/composables/userApiPatch";
 export const MembersService = {
   UserAPIEndPoint: "/users",
 
-  async getAllMembers() {
+  async getAllMembers(filterParams) {
+    const queryString =
+      "?" +
+      Object.keys(filterParams)
+        .map((key) => key + "=" + filterParams[key])
+        .join("&");
     const data = await useApiGet<GetMembersResponseModel>(
-      this.UserAPIEndPoint,
-      {
-        method: "GET",
-      }
+      this.UserAPIEndPoint + queryString
     );
     console.log(data.data);
     return data.data;

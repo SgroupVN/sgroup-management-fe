@@ -10,7 +10,7 @@ export default function useApiGet<T>(url: string, opts: any = {}) {
   };
   return $fetch<BaseModel<T>>(url, {
     ...opts,
-    method: "get",
+    method: "GET",
     headers: {
       ...opts.headers,
       ...defaultHeaders,

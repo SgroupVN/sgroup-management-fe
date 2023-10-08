@@ -1,136 +1,152 @@
 <template>
-  <div class="card h-full">
-    <h3>Members</h3>
-    <div class="flex justify-end my-2 gap-2">
-      <Button
-        class="cursor-pointer"
-        @click="downloadImportMemberTemplate($event)"
-        outlined
-      >
-        <label for="dropzone-file">
-          <i class="pi pi-download mr-2"></i>
-          Download Template
-        </label>
-      </Button>
-      <Button class="cursor-pointer">
-        <label for="dropzone-file">
-          <i class="pi pi-upload mr-2"></i>
-          Import
-        </label>
-        <input
-          id="dropzone-file"
-          type="file"
-          class="hidden"
-          @change="handleFileUpload"
+  <div class="bg-white rounded-md h-full flex flex-col">
+    <div class="flex gap-2 justify-between items-center">
+      <div class="text-2xl px-3 py-5 font-bold">Members</div>
+      <div class="flex justify-end my-2 gap-2">
+        <Button
+          icon="pi pi-refresh"
+          text
+          rounded
+          aria-label="Refresh"
+          @click="getMembers"
         />
-      </Button>
-      <Button
-        label="New"
-        icon="pi pi-plus"
-        severity="secondary"
-        class="mr-2"
-        @click="toggleMemberDialog"
-      ></Button>
+        <Button
+          class="cursor-pointer"
+          @click="downloadImportMemberTemplate($event)"
+          outlined
+        >
+          <label for="dropzone-file">
+            <i class="pi pi-download mr-2"></i>
+            Download Template
+          </label>
+        </Button>
+        <Button class="cursor-pointer">
+          <label for="dropzone-file">
+            <i class="pi pi-upload mr-2"></i>
+            Import
+          </label>
+          <input
+            id="dropzone-file"
+            type="file"
+            class="hidden"
+            @change="handleFileUpload"
+          />
+        </Button>
+        <Button
+          label="New"
+          icon="pi pi-plus"
+          severity="secondary"
+          class="mr-2"
+          @click="toggleMemberDialog"
+        ></Button>
+      </div>
     </div>
 
-    <DataTable
-      :value="members"
-      :rows="5"
-      :paginator="true"
-      responsiveLayout="scroll"
-      :resizableColumns="true"
-      scrollable
-      removableSort
-    >
-      <template #empty> No member found. </template>
-      <Column header="Members" style="min-width: 14rem" frozen>
-        <template #body="{ data }">
-          <div class="flex align-items-center gap-2">
-            <!-- <Avatar :alt="data.firstName + ' ' + data.lastName" :src="data.avatar" style="width: 32px" /> -->
-            <Avatar
-              image="https://www.gravatar.com/avatar/05dfd4b41340d09cae045235eb0893c3?d=mp"
-              class="flex align-items-center justify-content-center mr-2"
-              shape="circle"
-              size="large"
-            />
-            <span>{{ data.firstName + " " + data.lastName }}</span>
-          </div>
-        </template>
-      </Column>
-      <Column
-        field="email"
-        header="Email"
-        :sortable="true"
-        style="width: 20%; min-width: 200px"
-        ><template #body="{ data }">
-          {{ data.email || "-" }}
-        </template></Column
+    <div class="flex-1" style="height: calc(100% - 84px)">
+      <DataTable
+        :value="members"
+        class="h-full"
+        :rows="10"
+        :paginator="true"
+        :loading="isLoading"
+        responsiveLayout="scroll"
+        :resizableColumns="true"
+        scrollable
+        removableSort
+        :contentStyle="{ height: 'calc(100% - 60px)' }"
       >
-      <Column
-        field="dateOfBirth"
-        header="Date of Birth"
-        :sortable="true"
-        style="width: 15%; min-width: 150px"
-        ><template #body="{ data }">
-          {{ data.dateOfBirth || "-" }}
-        </template></Column
-      >
-      <Column
-        field="phone"
-        header="Phone"
-        :sortable="true"
-        style="width: 15%; min-width: 150px"
-        ><template #body="{ data }">
-          {{ data.phone || "-" }}
-        </template></Column
-      >
-      <Column
-        field="status"
-        header="Status"
-        :sortable="true"
-        style="width: 10%; min-width: 150px"
-        ><template #body="{ data }">
-          {{ data.status || "-" }}
-        </template></Column
-      >
-      <Column
-        field="lateCount"
-        header="Late Count"
-        :sortable="true"
-        style="width: 10%; min-width: 150px"
-      >
-        <template #body="{ data }">
-          {{ data.lateCount || "-" }}
-        </template></Column
-      >
-      <Column
-        field="major"
-        header="Major"
-        :sortable="true"
-        style="width: 15%; min-width: 150px"
-        ><template #body="{ data }">
-          {{ data.major || "-" }}
-        </template></Column
-      >
-      <Column frozen>
-        <template #body="{ data, index }">
-          <Button
-            type="button"
-            :icon="'pi pi-pencil'"
-            text
-            @click="editMember(data, index)"
-          ></Button>
+        <template #empty> No member found. </template>
+        <Column header="Members" style="min-width: 14rem" frozen>
+          <template #body="{ data }">
+            <div class="flex align-items-center gap-2">
+              <!-- <Avatar :alt="data.firstName + ' ' + data.lastName" :src="data.avatar" style="width: 32px" /> -->
+              <Avatar
+                image="https://www.gravatar.com/avatar/05dfd4b41340d09cae045235eb0893c3?d=mp"
+                class="flex align-items-center justify-content-center mr-2"
+                shape="circle"
+                size="large"
+              />
+              <span>{{ data.name ?? "-" }}</span>
+            </div>
+          </template>
+        </Column>
+        <Column
+          field="email"
+          header="Email"
+          :sortable="true"
+          style="width: 20%; min-width: 200px"
+          ><template #body="{ data }">
+            {{ data.email || "-" }}
+          </template></Column
+        >
+        <Column
+          field="major"
+          header="Major"
+          :sortable="true"
+          style="width: 15%; min-width: 150px"
+          ><template #body="{ data }">
+            {{ data.major || "-" }}
+          </template></Column
+        >
+        <Column
+          field="status"
+          header="Status"
+          :sortable="true"
+          style="width: 10%; min-width: 150px"
+          ><template #body="{ data }">
+            {{ data.status || "-" }}
+          </template></Column
+        >
+        <!-- <Column
+          field="dateOfBirth"
+          header="Date of Birth"
+          :sortable="true"
+          style="width: 15%; min-width: 150px"
+          ><template #body="{ data }">
+            {{ data.dateOfBirth || "-" }}
+          </template></Column
+        > -->
+        <Column
+          field="phone"
+          header="Phone"
+          :sortable="true"
+          style="width: 15%; min-width: 150px"
+          ><template #body="{ data }">
+            {{ data.phone || "-" }}
+          </template></Column
+        >
 
-          <Button
-            type="button"
-            :icon="'pi pi-trash'"
-            class="text-red-500"
-            text
-            @click="onDeleteButtonClicked(data, index)"
-          ></Button>
-        </template>
-      </Column>
-    </DataTable>
+        <Column
+          field="lateCount"
+          header="Late Count"
+          :sortable="true"
+          style="width: 10%; min-width: 150px"
+        >
+          <template #body="{ data }">
+            {{ data.lateCount || "0" }}
+          </template></Column
+        >
+
+        <Column frozen>
+          <template #body="{ data, index }">
+            <Button
+              type="button"
+              :icon="'pi pi-pencil'"
+              text
+              @click="editMember(data, index)"
+            ></Button>
+
+            <Button
+              type="button"
+              :icon="'pi pi-trash'"
+              class="text-red-500"
+              text
+              @click="onDeleteButtonClicked(data, index)"
+            ></Button>
+          </template>
+        </Column>
+      </DataTable>
+    </div>
   </div>
 
   <Dialog
@@ -145,10 +161,11 @@
       removableSort
       :value="importedColumns"
       :rows="10"
+      :rowsPerPageOptions="[5, 10, 25]"
       :paginator="false"
       responsiveLayout="scroll"
       :resizableColumns="true"
-      :contentStyle="{ height: '300px' }"
+      :contentStyle="{ height: 'calc(100% - 60px)' }"
     >
       <Column
         field="value"
@@ -239,14 +256,28 @@ const members = ref(null);
 const importedColumns = ref([]);
 const importedData = ref([]);
 const memberProperties = ref(MEMBER_PROPERTIES);
+const filterParams = ref({
+  page: 1,
+  take: 100,
+});
 
 const isShowMemberDetailsDialog = ref(false);
 const isShowImportConfigDialog = ref(false);
+const isLoading = ref(false);
 let editedMember = ref(null);
 
 onMounted(() => {
-  MembersService.getAllMembers().then((data) => (members.value = data));
+  getMembers();
 });
+
+const getMembers = () => {
+  isLoading.value = true;
+
+  MembersService.getAllMembers(filterParams.value).then((data) => {
+    members.value = data;
+    isLoading.value = false;
+  });
+};
 
 const editMember = (data, index) => {
   toggleMemberDialog();
