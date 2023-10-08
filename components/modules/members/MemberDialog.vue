@@ -54,13 +54,13 @@
         >Phone Number is required.</small
       >
     </div>
-    <!-- <div class="field">
+    <div class="field">
       <label for="address">Address</label>
       <InputText id="address" v-model.trim="member.address" />
       <small class="p-error" v-if="isSubmitted && !member.address"
         >Address is required.</small
       >
-    </div> -->
+    </div>
     <div class="field">
       <label for="birthDate">Date of Birth</label>
       <Calendar
@@ -74,7 +74,7 @@
         >Date of Birth is required.</small
       >
     </div>
-    <!-- <div class="field">
+    <div class="field">
       <label for="debt">Debt</label>
       <InputNumber
         id="debt"
@@ -123,7 +123,7 @@
         placeholder="Select a Major"
       >
       </Dropdown>
-    </div> -->
+    </div>
     <template #footer>
       <Button label="Cancel" icon="pi pi-times" text @click="cancel"></Button>
       <Button
@@ -164,12 +164,12 @@ const member = ref(
     lastName: "",
     email: "",
     phone: "",
-    // address: "",
+    address: "",
     birthDate: null,
-    // debt: 0,
-    // status: MemberStatus.Active,
-    // major: PROGRAMMING_MAJORS[0].key,
-    // avatar: "",
+    debt: 0,
+    status: MemberStatus.Active,
+    major: PROGRAMMING_MAJORS[0].key,
+    avatar: "",
   }
 );
 const isVisible = ref(props.visible);
@@ -188,10 +188,6 @@ const onMajorGroupChange = () => {
       break;
   }
 };
-
-onMounted(() => {
-  console.log("onMounted the dialog");
-});
 
 const onStatusChanged = (event) => {
   member.value.status = event.value;

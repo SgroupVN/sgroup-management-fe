@@ -1,6 +1,7 @@
 <template>
   <div class="card h-full">
     <h3>Members</h3>
+    <h5>Download Add template CSV <a @click="downloadFile($event)">HERE</a></h5>
     <div class="flex justify-end my-2 gap-2">
       <Button class="cursor-pointer">
         <label for="dropzone-file">
@@ -19,7 +20,7 @@
         icon="pi pi-plus"
         severity="secondary"
         class="mr-2"
-        @click="changeStateOfAddDialog"
+        @click="toggleMemberDialog"
       ></Button>
     </div>
 
@@ -56,7 +57,7 @@
           {{ data.email || "-" }}
         </template></Column
       >
-      <!-- <Column
+      <Column
         field="dateOfBirth"
         header="Date of Birth"
         :sortable="true"
@@ -64,7 +65,7 @@
         ><template #body="{ data }">
           {{ data.dateOfBirth || "-" }}
         </template></Column
-      > -->
+      >
       <Column
         field="phone"
         header="Phone"
@@ -74,7 +75,7 @@
           {{ data.phone || "-" }}
         </template></Column
       >
-      <!-- <Column
+      <Column
         field="status"
         header="Status"
         :sortable="true"
@@ -82,8 +83,8 @@
         ><template #body="{ data }">
           {{ data.status || "-" }}
         </template></Column
-      > -->
-      <!-- <Column
+      >
+      <Column
         field="lateCount"
         header="Late Count"
         :sortable="true"
@@ -92,7 +93,7 @@
         <template #body="{ data }">
           {{ data.lateCount || "-" }}
         </template></Column
-      > -->
+      >
       <Column
         field="major"
         header="Major"
@@ -192,7 +193,7 @@
     <MemberDialog
       :visible="isShowMemberDetailsDialog"
       :member-data="editedMember"
-      @close="changeStateOfAddDialog"
+      @close="onCloseMemberDialog"
       @saved="onMemberCreated"
     ></MemberDialog>
   </div>
@@ -223,7 +224,7 @@ const memberProperties = ref(MEMBER_PROPERTIES);
 
 const isShowMemberDetailsDialog = ref(false);
 const isShowImportConfigDialog = ref(false);
-let editedMember = ref(false);
+let editedMember = ref(null);
 
 onMounted(() => {
   MembersService.getAllMembers().then((data) => (members.value = data));
@@ -231,11 +232,27 @@ onMounted(() => {
 
 const editMember = (data, index) => {
   editedMember = data;
-  changeStateOfAddDialog();
+  toggleMemberDialog();
+};
+
+const downloadFile = (event) => {
+  event.preventDefault();
+  const csv = ["Members", "Email", "Phone", "Date of Birth", "Major", "Debt"];
+  const csvString = csv.join(",");
+  const blob = new Blob([csvString], { type: "text/csv" });
+  const link = document.createElement("a");
+  link.href = URL.createObjectURL(blob);
+  link.download = "Add new members template";
+  link.click();
 };
 
 const onMemberCreated = () => {
   //
+};
+
+const onCloseMemberDialog = () => {
+  editedMember.value = null;
+  toggleMemberDialog();
 };
 
 //  #region Import Excel
@@ -291,7 +308,7 @@ const processExcelData = (data) => {
 // #endregion
 
 // #region Add Member Dialog
-const changeStateOfAddDialog = () => {
+const toggleMemberDialog = () => {
   isShowMemberDetailsDialog.value = !isShowMemberDetailsDialog.value;
 };
 // #endregion
